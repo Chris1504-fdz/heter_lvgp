@@ -29,7 +29,7 @@ Set to the config that reproduces the notebook's **Experiment 1 mean MAE = 9.11*
 **`poly_degree=2`** (log-σ is exactly quadratic in x1 here → well specified), **`mu_l=-1.5`,
 `lambda_l_sq=1.0`**, `mu_k_al=-1.0`, `lambda_k_al_sq=1.0`, `lambda_theta_sq=1.0`, Adam `lr=0.01`.
 
-⚠️ The tight length-scale prior **`mu_l=-2.5, lambda_l_sq=0.05`** (used for the Part-1 synthetic in
+The tight length-scale prior **`mu_l=-2.5, lambda_l_sq=0.05`** (used for the Part-1 synthetic in
 the notebook) forces `l≈0.08`, overfits, and scores **MAE 14.3** — do not use it here.
 
 **Cross-checked against the paper (ref.pdf, Appendix B).** Eqs. 19–21 match the loss terms exactly,
