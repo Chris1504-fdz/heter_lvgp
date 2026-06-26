@@ -1473,3 +1473,31 @@ def compare_summary_heatmaps(studies_labels, is_ground_truth=True, log=False,
     fig.suptitle("Summary heatmaps across studies — objective panels share one range, "
                  f"variance panels share another\n{_src_tag(is_ground_truth)}")
     return fig
+
+
+def compare_runtime(studies_labels, logy=True, colors=("C0", "C2", "C3", "C1")):
+    """Mean wall-clock runtime per BO run across studies: grouped bars, x = acquisition,
+    one bar per study. Log y by default (LVGP/MATLAB and the Python GP studies differ ~10x).
+    The legend shows each study's overall mean runtime per run. NOTE: LVGP is MATLAB while the
+    GP studies are Python, so absolute magnitudes are NOT a same-engine comparison."""
+    cfg_keys = [canon_cfg(a, p) for a, p in CONFIG_ORDER]
+    cfg_labels = [label(a, p) for a, p in CONFIG_ORDER]
+    x = np.arange(len(cfg_keys))
+    nstud = len(studies_labels)
+    w = 0.8 / max(nstud, 1)
+    fig, ax = plt.subplots(figsize=(13, 5))
+    for si, (s, lab) in enumerate(studies_labels):
+        means = [np.mean([r["runtime"] for r in s.runs if s.cfg_key(r) == cfg]) or np.nan
+                 if any(s.cfg_key(r) == cfg for r in s.runs) else np.nan for cfg in cfg_keys]
+        ov = float(np.mean([r["runtime"] for r in s.runs])) if s.runs else float("nan")
+        ax.bar(x + (si - (nstud - 1) / 2) * w, means, w, color=colors[si % len(colors)],
+               edgecolor="k", lw=0.3, label=f"{lab}  (overall {ov:.0f} s/run)")
+    if logy:
+        ax.set_yscale("log")
+    ax.set_xticks(x); ax.set_xticklabels(cfg_labels, rotation=40, ha="right", fontsize=8)
+    ax.set_ylabel("mean runtime per BO run (s)" + ("  [log]" if logy else ""))
+    ax.set_title("Wall-clock runtime per BO run across studies\n"
+                 "(LVGP = MATLAB; per-category & categorical GP = Python — different engines)")
+    ax.legend(fontsize=9); ax.grid(axis="y", alpha=0.3, which="both")
+    fig.tight_layout()
+    return fig
