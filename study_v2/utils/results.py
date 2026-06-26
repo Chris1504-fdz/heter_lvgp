@@ -753,7 +753,7 @@ class StudyResults:
         return fig
 
     # ============================ objective vs variance ============================
-    def plot_objective_variance(self, is_ground_truth=False, aggregate=True):
+    def plot_objective_variance(self, is_ground_truth=False, aggregate=True, errorbars=False):
         """Final solutions in objective vs aleatoric-variance space (per acq + n_rep).
         is_ground_truth=True plots BOTH axes from the ground truth: the noise-free f and
         the analytic noise variance σ²(x1,level) at the final design; False plots what BO
@@ -762,7 +762,9 @@ class StudyResults:
         n_rep) -- one point each, IDENTICAL to the values in plot_summary_heatmaps, so the
         scatter and the heatmap are directly consistent (same range). aggregate=False plots
         EVERY final solution (one point per seed), where a few n_rep=3 outliers reach much
-        higher σ² (the optimistic-bias effect) -- a wider spread than the mean heatmap."""
+        higher σ² (the optimistic-bias effect) -- a wider spread than the mean heatmap.
+        errorbars (aggregate mode only): False = none; True/'sem' = ± standard error of the
+        mean over seeds; 'std' = ± standard deviation (the spread). Drawn on both axes."""
         colors, cfgs = self._color_map()
         fig, ax = plt.subplots(figsize=(7, 5.5)); markers = {3: "o", 5: "s", 10: "^"}
         for cfg in cfgs:
@@ -771,6 +773,13 @@ class StudyResults:
                        for r in self.runs if self.cfg_key(r) == cfg and r["n_rep"] == nr]
                 if not pts: continue
                 pts = np.array(pts)
+                if aggregate and errorbars and len(pts) > 1:
+                    mean = pts.mean(axis=0); sd = pts.std(axis=0, ddof=1)
+                    err = sd / np.sqrt(len(pts)) if errorbars in (True, "sem") else sd
+                    ax.errorbar(mean[0], mean[1], xerr=err[0], yerr=err[1], fmt=markers.get(nr, "o"),
+                                ms=8, color=colors[cfg], ecolor=colors[cfg], elinewidth=1, capsize=3,
+                                alpha=0.85, markeredgecolor="k", markeredgewidth=0.3)
+                    continue
                 if aggregate:
                     pts = pts.mean(axis=0, keepdims=True)     # one MEAN point per (acq, n_rep)
                 ax.scatter(pts[:, 0], pts[:, 1], color=colors[cfg], marker=markers.get(nr, "o"),
