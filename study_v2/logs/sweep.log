@@ -1,0 +1,33 @@
+1080 pending jobs across 30 persistent workers (~36 each) | num_iter=30
+shared Xvfb on :115 (pid 3636241)
+launched worker 0 (pid 3636247) -> chunk_0.log
+launched worker 1 (pid 3636658) -> chunk_1.log
+launched worker 2 (pid 3636966) -> chunk_2.log
+launched worker 3 (pid 3637273) -> chunk_3.log
+launched worker 4 (pid 3637585) -> chunk_4.log
+launched worker 5 (pid 3637882) -> chunk_5.log
+launched worker 6 (pid 3638181) -> chunk_6.log
+launched worker 7 (pid 3638489) -> chunk_7.log
+launched worker 8 (pid 3638791) -> chunk_8.log
+launched worker 9 (pid 3639087) -> chunk_9.log
+launched worker 10 (pid 3639423) -> chunk_10.log
+launched worker 11 (pid 3639725) -> chunk_11.log
+launched worker 12 (pid 3640024) -> chunk_12.log
+launched worker 13 (pid 3640319) -> chunk_13.log
+launched worker 14 (pid 3640638) -> chunk_14.log
+launched worker 15 (pid 3640939) -> chunk_15.log
+launched worker 16 (pid 3641234) -> chunk_16.log
+launched worker 17 (pid 3641530) -> chunk_17.log
+launched worker 18 (pid 3641848) -> chunk_18.log
+launched worker 19 (pid 3642143) -> chunk_19.log
+launched worker 20 (pid 3642447) -> chunk_20.log
+launched worker 21 (pid 3642749) -> chunk_21.log
+launched worker 22 (pid 3643127) -> chunk_22.log
+launched worker 23 (pid 3643450) -> chunk_23.log
+launched worker 24 (pid 3643785) -> chunk_24.log
+launched worker 25 (pid 3644101) -> chunk_25.log
+launched worker 26 (pid 3644502) -> chunk_26.log
+launched worker 27 (pid 3644835) -> chunk_27.log
+launched worker 28 (pid 3645135) -> chunk_28.log
+launched worker 29 (pid 3645428) -> chunk_29.log
+persistent sweep finished: 1080/1080 of the queued jobs now have results

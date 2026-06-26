@@ -1,0 +1,28 @@
+cat > .gitignore <<'EOF'
+# --- huge MATLAB binaries: GitHub rejects files >100 MB ---
+matlab_R2026a_Linux.zip
+matlab_installer/
+mathworks_support.zip
+hetero_study_bundle.tar.gz
+
+# --- TensorBoard logs (large, regenerable) ---
+tb/
+
+# --- trash / backups ---
+study/_review_trash/
+*.orig
+
+# --- python ---
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+LVGP_Matlab_codes/
+heterockedastic_new_inv/
+study/
+
+# --- (optional) uncomment for a lean CODE-ONLY repo, dropping experiment outputs ---
+# **/results/
+# **/plots/
+# plots_study/
+# *.csv
+EOF
