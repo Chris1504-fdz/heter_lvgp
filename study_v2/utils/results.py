@@ -202,19 +202,19 @@ class StudyResults:
         return out
 
     def _final_obj(self, run, is_ground_truth=False):
-        """Objective of the reported final design (X_best_final): TRUE f at that
-        design (is_ground_truth=True) or its NOISY sample-mean Y_best_final."""
-        return self._final_true_obj(run, "best") if is_ground_truth else run["Y_best_final"]
+        """Objective of the 'best' sampled design. is_ground_truth=True: TRUE f at the design
+        with the LOWEST TRUE f among all samples (best-by-ground-truth -- matches the
+        true_best_sampled convergence metric; never uses the noisy mean). False: the best
+        OBSERVED noisy sample-mean (the design BO would recommend)."""
+        idx = self._best_sample_idx(run, is_ground_truth)
+        return float(self._true_obj_of_samples(run)[idx] if is_ground_truth else run["Y_sampled"][idx])
 
     def _final_var(self, run, is_ground_truth=False):
-        """Aleatoric variance of the reported final design (X_best_final): the analytic
-        TRUE noise variance σ²(x1, level) at that design (is_ground_truth=True), or the
-        n_rep sample-variance estimate Y_var_best_final (is_ground_truth=False, what BO
-        measured — selection-biased low at small n_rep)."""
-        if is_ground_truth:
-            x1, lv = run["X_best_final"][0], int(round(run["X_best_final"][1]))
-            return float(sigma(x1, lv)**2) if 1 <= lv <= len(VAR_FCTR) else np.nan
-        return run["Y_var_best_final"]
+        """Aleatoric variance of the 'best' sampled design (selected exactly as in _final_obj):
+        is_ground_truth=True -> analytic TRUE σ²(x1,level) at the best-by-true design; False ->
+        the n_rep sample-variance estimate at the best-by-noisy design."""
+        idx = self._best_sample_idx(run, is_ground_truth)
+        return float(self._true_var_of_samples(run)[idx] if is_ground_truth else run["Y_var_sampled"][idx])
 
     def summary(self):
         """Quick text summary of what's loaded."""
