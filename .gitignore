@@ -3,9 +3,9 @@ cat > .gitignore <<'EOF'
 matlab_R2026a_Linux.zip
 matlab_installer/
 mathworks_support.zip
-hetero_study_bundle.tar.gz
 Heter_BO_GF.zip
 LVGP_Matlab_codes.zip
+hetero_study_bundle.tar.gz
 
 # --- TensorBoard logs (large, regenerable) ---
 tb/
