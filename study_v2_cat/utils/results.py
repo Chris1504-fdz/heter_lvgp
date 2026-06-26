@@ -1512,10 +1512,11 @@ def compare_runtime(studies_labels, logy=True, colors=("C0", "C2", "C3", "C1")):
     return fig
 
 
-def runtime_summary(studies_labels):
+def runtime_summary(studies_labels, excel_path=None):
     """Print conclusion-friendly wall-clock runtime stats across studies and return a per-study
     summary DataFrame (runs, mean/median/std/min/max s per run, total minutes & hours). Also
-    prints the mean-runtime ratio vs the fastest study and the per-n_rep breakdown."""
+    prints the mean-runtime ratio vs the fastest study and the per-n_rep breakdown.
+    excel_path: if given, also write a .xlsx with sheets 'per_study' and 'mean_by_n_rep'."""
     import pandas as pd
     rows = []
     for s, lab in studies_labels:
@@ -1537,10 +1538,19 @@ def runtime_summary(studies_labels):
         print(f"  {lab:18s} {df.loc[lab, 'mean_s'] / df['mean_s'].min():5.1f}x   "
               f"({df.loc[lab, 'mean_s']:.0f} s/run, total {df.loc[lab, 'total_hr']:.1f} h)")
     print("\nMean s/run by n_rep:")
+    by_rows = {}
     for s, lab in studies_labels:
         if not s.runs:
             continue
-        by = {nr: float(np.mean([r["runtime"] for r in s.runs if r["n_rep"] == nr]))
+        by = {f"n_rep={nr}": float(np.mean([r["runtime"] for r in s.runs if r["n_rep"] == nr]))
               for nr in sorted(s.n_reps)}
-        print(f"  {lab:18s} " + "  ".join(f"n_rep={nr}: {v:5.0f}s" for nr, v in by.items()))
+        by_rows[lab] = by
+        print(f"  {lab:18s} " + "  ".join(f"{k}: {v:5.0f}s" for k, v in by.items()))
+    if excel_path:
+        import os
+        os.makedirs(os.path.dirname(excel_path) or ".", exist_ok=True)
+        with pd.ExcelWriter(excel_path) as xw:
+            df.round(2).to_excel(xw, sheet_name="per_study")
+            pd.DataFrame(by_rows).T.round(1).to_excel(xw, sheet_name="mean_by_n_rep")
+        print(f"\nwrote {excel_path}")
     return df
