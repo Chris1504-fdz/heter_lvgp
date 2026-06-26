@@ -6,7 +6,7 @@ Sweeps 12 acquisition-function configs x n_rep in {3,5,10} x N seeds, by
 launching one isolated `matlab -batch study_driver(...)` per cell across a
 local process pool, then collecting every Y_min_history into a tidy CSV.
 
-The postdoc's .m files are NOT modified; study_driver.m only *calls* them.
+The .m files are NOT modified; study_driver.m only *calls* them.
 """
 import argparse, subprocess, itertools, os, sys, tempfile, shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
