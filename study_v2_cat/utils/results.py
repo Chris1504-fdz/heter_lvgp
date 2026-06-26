@@ -1510,3 +1510,37 @@ def compare_runtime(studies_labels, logy=True, colors=("C0", "C2", "C3", "C1")):
     ax.legend(fontsize=9); ax.grid(axis="y", alpha=0.3, which="both")
     fig.tight_layout()
     return fig
+
+
+def runtime_summary(studies_labels):
+    """Print conclusion-friendly wall-clock runtime stats across studies and return a per-study
+    summary DataFrame (runs, mean/median/std/min/max s per run, total minutes & hours). Also
+    prints the mean-runtime ratio vs the fastest study and the per-n_rep breakdown."""
+    import pandas as pd
+    rows = []
+    for s, lab in studies_labels:
+        rt = np.array([r["runtime"] for r in s.runs], float)
+        if rt.size == 0:
+            continue
+        rows.append(dict(study=lab, runs=len(rt), mean_s=rt.mean(), median_s=float(np.median(rt)),
+                         std_s=rt.std(), min_s=rt.min(), max_s=rt.max(),
+                         total_min=rt.sum() / 60, total_hr=rt.sum() / 3600))
+    df = pd.DataFrame(rows).set_index("study")
+    if df.empty:
+        print("no runs loaded"); return df
+    fastest = df["mean_s"].idxmin()
+    print("Wall-clock runtime per BO run (seconds) and TOTAL compute per study "
+          f"({df['runs'].iloc[0]} runs each):\n")
+    print(df.round(1).to_string())
+    print(f"\nMean runtime relative to the fastest study ({fastest}):")
+    for lab in df.index:
+        print(f"  {lab:18s} {df.loc[lab, 'mean_s'] / df['mean_s'].min():5.1f}x   "
+              f"({df.loc[lab, 'mean_s']:.0f} s/run, total {df.loc[lab, 'total_hr']:.1f} h)")
+    print("\nMean s/run by n_rep:")
+    for s, lab in studies_labels:
+        if not s.runs:
+            continue
+        by = {nr: float(np.mean([r["runtime"] for r in s.runs if r["n_rep"] == nr]))
+              for nr in sorted(s.n_reps)}
+        print(f"  {lab:18s} " + "  ".join(f"n_rep={nr}: {v:5.0f}s" for nr, v in by.items()))
+    return df
