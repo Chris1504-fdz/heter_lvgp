@@ -18,12 +18,14 @@ does NOT trigger the results/plotting stack -- workers stay lean.
 from . import problem
 
 __all__ = ["StudyResults", "compare_studies", "compare_studies_multi",
-           "compare_summary_heatmaps", "compare_runtime", "runtime_summary", "problem"]
+           "compare_summary_heatmaps", "compare_variance_convergence",
+           "compare_runtime", "runtime_summary", "problem"]
 
 
 def __getattr__(name):                            # PEP 562: lazy import of the plotting stack
     if name in ("StudyResults", "compare_studies", "compare_studies_multi",
-                "compare_summary_heatmaps", "compare_runtime", "runtime_summary"):
+                "compare_summary_heatmaps", "compare_variance_convergence",
+                "compare_runtime", "runtime_summary"):
         import importlib
         return getattr(importlib.import_module(".results", __name__), name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

@@ -1554,3 +1554,78 @@ def runtime_summary(studies_labels, excel_path=None):
             pd.DataFrame(by_rows).T.round(1).to_excel(xw, sheet_name="mean_by_n_rep")
         print(f"\nwrote {excel_path}")
     return df
+
+
+def _best_design_variance_traj(run, is_ground_truth):
+    """Per-iteration σ² at the best-so-far design. is_ground_truth=True -> TRUE σ²(x1,level) at the
+    best-by-TRUE-f design; False -> the n_rep sample variance at the best-by-noisy-mean design."""
+    Xs = run["X_sampled"]; n0 = int(run["n_initial"])
+    lv = np.round(Xs[:, 1]).astype(int)
+    if is_ground_truth:
+        obj = np.array([f_true(Xs[i, 0], VAR_FCTR[lv[i] - 1]) for i in range(len(Xs))])
+        var = np.array([float(sigma(Xs[i, 0], lv[i]) ** 2) for i in range(len(Xs))])
+    else:
+        obj = np.asarray(run["Y_sampled"], float)
+        var = np.asarray(run["Y_var_sampled"], float)
+    cum_arg = np.empty(len(obj), int); best = 0          # cumulative argmin of the objective
+    for i in range(len(obj)):
+        if obj[i] < obj[best]:
+            best = i
+        cum_arg[i] = best
+    niter = len(run["Y_min_history"])
+    idx = np.clip(n0 - 1 + np.arange(1, niter + 1), 0, len(obj) - 1)
+    return var[cum_arg[idx]]
+
+
+def compare_variance_convergence(studies_labels, is_ground_truth=True, n_rep=10, configs=None,
+                                 ncols=3, logy=True, colors=("C0", "C2", "C3", "C1", "C4")):
+    """Convergence of the NOISE VARIANCE σ² at the best-so-far design, per acquisition, one line
+    per study (mean ± s.e. over seeds). is_ground_truth=True -> TRUE σ²(x1,level) at the
+    best-by-TRUE design; False -> the n_rep sample variance at the best-by-noisy design. Lower =
+    the BO is settling on lower-noise (more reliable) designs."""
+    from collections import defaultdict
+    trajs = []
+    for s, lab in studies_labels:
+        series = defaultdict(list)
+        for r in s.runs:
+            if r["n_rep"] != n_rep:
+                continue
+            series[StudyResults.cfg_key(r)].append(_best_design_variance_traj(r, is_ground_truth))
+        out = {}
+        for cfg, lst in series.items():
+            L = min(len(t) for t in lst); A = np.array([t[:L] for t in lst]); n = A.shape[0]
+            sem = A.std(0, ddof=1) / np.sqrt(n) if n > 1 else np.zeros(L)
+            out[cfg] = (np.arange(1, L + 1), A.mean(0), sem)
+        trajs.append((out, lab))
+    have = set.intersection(*[set(o) for o, _ in trajs]) if trajs else set()
+    cfgs = [canon_cfg(a, p) for a, p in CONFIG_ORDER]
+    cfgs = [c for c in cfgs if c in have
+            and (configs is None or acf_tag(c[0], _cfg_param(c)) in configs)]
+    if not cfgs:
+        raise ValueError("no (config, n_rep) cell shared by ALL studies")
+    nrows = int(np.ceil(len(cfgs) / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(5.2*ncols, 3.6*nrows), squeeze=False)
+    ylab = ("TRUE σ²" if is_ground_truth else "sample σ²") + " at best design"
+    for k, cfg in enumerate(cfgs):
+        ax = axes[k // ncols][k % ncols]
+        for (od, lab), col in zip(trajs, colors):
+            it, mean, sem = od[cfg]
+            m = np.maximum(mean, 1e-12) if logy else mean
+            lo = np.maximum(mean - sem, 1e-12) if logy else mean - sem
+            ax.plot(it, m, color=col, lw=1.8, label=lab)
+            ax.fill_between(it, lo, mean + sem, color=col, alpha=0.13)
+        ax.set_title(label(cfg[0], _cfg_param(cfg)))
+        if logy:
+            ax.set_yscale("log")
+        ax.grid(alpha=0.25, which="both")
+        if k % ncols == 0:
+            ax.set_ylabel(ylab)
+        if k // ncols == nrows - 1:
+            ax.set_xlabel("BO iteration")
+    for k in range(len(cfgs), nrows * ncols):
+        axes[k // ncols][k % ncols].axis("off")
+    axes[0][0].legend(fontsize=9)
+    fig.suptitle(f"{'  vs  '.join(l for _, l in studies_labels)} — σ² at best design "
+                 f"({'true' if is_ground_truth else 'noisy'}, n_rep={n_rep}, mean ± s.e. over seeds)", y=1.0)
+    fig.tight_layout()
+    return fig
