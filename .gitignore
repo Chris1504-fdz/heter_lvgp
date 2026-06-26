@@ -4,6 +4,8 @@ matlab_R2026a_Linux.zip
 matlab_installer/
 mathworks_support.zip
 hetero_study_bundle.tar.gz
+Heter_BO_GF.zip
+LVGP_Matlab_codes.zip
 
 # --- TensorBoard logs (large, regenerable) ---
 tb/
@@ -19,9 +21,7 @@ __pycache__/
 LVGP_Matlab_codes/
 heterockedastic_new_inv/
 study/
-Heter_BO_GF.zip
-LVGP_Matlab_codes.zip
-Heter_BO_GF.zip
+
 
 # --- (optional) uncomment for a lean CODE-ONLY repo, dropping experiment outputs ---
 # **/results/
