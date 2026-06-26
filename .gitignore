@@ -13,6 +13,8 @@ tb/
 # --- trash / backups ---
 study/_review_trash/
 *.orig
+(poly)Heteroscedastic Gaussian Process Regression for material.pdf
+ref.pdf
 
 # --- python ---
 __pycache__/
