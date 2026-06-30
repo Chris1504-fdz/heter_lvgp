@@ -1,0 +1,4 @@
+study_v2_plain_lvgp — Standard (homoscedastic) LVGP, noise-UNAWARE baseline.
+Models the 5 categories with one standard Latent-Variable GP (a single global noise nugget, no
+heteroscedastic/aleatoric model), fit on the replicate MEAN ONLY (no replicate-variance info); only
+the noise-blind acquisitions ei/lcb/pi are used. Isolates the value of modeling the heteroscedastic noise.
