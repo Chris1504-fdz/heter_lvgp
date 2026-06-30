@@ -1,0 +1,4 @@
+study_v2_hgpr — Per-category HGPR (learned noise model).
+Models the 5 categories with FIVE INDEPENDENT heteroscedastic GPs that LEARN their polynomial noise
+model sigma^2(x)=(k_al*exp(sum theta_i x^i))^2 jointly with the GP via a MAP loss (Ozbayram et al.,
+CMAME 2024). Tests learning the aleatoric noise jointly vs. fitting it as a separate polynomial.

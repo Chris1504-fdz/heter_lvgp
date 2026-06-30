@@ -1,0 +1,4 @@
+study_v2_cat — Categorical GP (Method C).
+Models the 5 categories with ONE joint BoTorch MixedSingleTaskGP + CategoricalKernel that SHARES
+across categories (like LVGP, but in BoTorch); the acquisition is optimized with a hand-rolled
+grid + L-BFGS. Tests whether a botorch categorical kernel matches LVGP's sharing.

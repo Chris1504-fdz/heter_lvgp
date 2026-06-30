@@ -1,0 +1,4 @@
+study_v2 — LVGP (the reference method, MATLAB).
+Models the 5 categories with ONE Latent-Variable Gaussian Process that SHARES information across
+categories via a learned latent mapping; heteroscedastic noise is a fixed replicate-variance nugget
+plus a separate aleatoric polynomial.

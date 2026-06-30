@@ -1,0 +1,4 @@
+study_v2_gp — Per-category GP (no sharing).
+Models the 5 categories with FIVE INDEPENDENT BoTorch SingleTaskGPs (one per category, no
+cross-category sharing), each using the replicate variance as fixed noise plus a separately-fit
+degree-2 aleatoric polynomial. Isolates the value of LVGP's cross-category sharing.
