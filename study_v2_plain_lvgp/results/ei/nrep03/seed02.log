@@ -64,17 +64,8 @@ options.MaxFunctionEvaluations = 1.000000e+03.
 
 Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
 
-
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
-
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
-
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
 [Warning: Matrix is close to singular or badly scaled. Results may be
-inaccurate. RCOND =  1.160579e-16.] 
+inaccurate. RCOND =  9.626596e-17.] 
 [> In LVGP_fit (line 200)
 In study_driver (line 85)
 ] 
@@ -84,9 +75,19 @@ Feasible point with lower objective function value found, but optimality criteri
 
 Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
 
+[Warning: Matrix is close to singular or badly scaled. Results may be
+inaccurate. RCOND =  4.893890e-18.] 
+[> In LVGP_fit (line 200)
+In study_driver (line 85)
+] 
 
 Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
 
+[Warning: Matrix is close to singular or badly scaled. Results may be
+inaccurate. RCOND =  2.114911e-16.] 
+[> In LVGP_fit (line 200)
+In study_driver (line 85)
+] 
 
 Solver stopped prematurely.
 
@@ -97,7 +98,10 @@ options.MaxFunctionEvaluations = 1.000000e+03.
 Solver stopped prematurely.
 
 fmincon stopped because it exceeded the function evaluation limit,
-options.MaxFunctionEvaluations = 1.000000e+03.
+options.MaxFunctionEvaluations = 5.000000e+03.
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
 
 
 Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
@@ -106,25 +110,18 @@ Feasible point with lower objective function value found, but optimality criteri
 Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
 
 [Warning: Matrix is close to singular or badly scaled. Results may be
-inaccurate. RCOND =  3.268335e-18.] 
+inaccurate. RCOND =  2.457298e-17.] 
 [> In LVGP_fit (line 200)
 In study_driver (line 85)
 ] 
 
 Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
 
-
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
-
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
-
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
-
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
+[Warning: Matrix is close to singular or badly scaled. Results may be
+inaccurate. RCOND =  9.782587e-19.] 
+[> In LVGP_fit (line 200)
+In study_driver (line 85)
+] 
 
 Solver stopped prematurely.
 
@@ -138,47 +135,39 @@ fmincon stopped because it exceeded the function evaluation limit,
 options.MaxFunctionEvaluations = 1.000000e+03.
 
 
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
-
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
-
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
-
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
-
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
-[Warning: Matrix is close to singular or badly scaled. Results may be
-inaccurate. RCOND =  3.312279e-18.] 
-[> In LVGP_fit (line 200)
-In study_driver (line 85)
-] 
-
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
-
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
-
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
-
-Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
-
-
 Solver stopped prematurely.
 
 fmincon stopped because it exceeded the function evaluation limit,
 options.MaxFunctionEvaluations = 1.000000e+03.
 
 
-Solver stopped prematurely.
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
 
-fmincon stopped because it exceeded the function evaluation limit,
-options.MaxFunctionEvaluations = 1.000000e+03.
 
-DONE acf=lcb param=NaN n_rep=3 seed=2  final_y=4.462  42.3s
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+DONE acf=ei param=NaN n_rep=3 seed=2  final_y=4.06678  44.4s

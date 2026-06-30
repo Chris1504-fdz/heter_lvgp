@@ -77,6 +77,34 @@ def cell_paths(acf, param, n_rep, seed):
     return d, os.path.join(d, base + ".mat"), os.path.join(d, base + ".log"), tag
 
 
+# --- launch throttle ---------------------------------------------------------------------------
+# Concurrent MATLAB license checkouts must NOT burst: a burst wedges the MathWorks Service Host
+# (MSH), after which every worker hangs at startup (futex_wait, never exits, so the 5001 retry
+# below never fires). We therefore space launches >= LAUNCH_GAP_S apart, shared across all pool
+# workers via a lock installed by the executor initializer, and time out (kill + retry) any run
+# that hangs in checkout.
+LAUNCH_GAP_S = 8.0        # minimum seconds between MATLAB launches
+RUN_TIMEOUT_S = 1200      # kill+retry a MATLAB hung in checkout (a real run is ~5 min)
+
+
+def _pool_init(lock, last):
+    global _LAUNCH_LOCK, _LAST_LAUNCH
+    _LAUNCH_LOCK, _LAST_LAUNCH = lock, last
+
+
+def _throttle_launch():
+    """Block until >= LAUNCH_GAP_S have passed since the last launch (across all workers)."""
+    import time as _t
+    lk = globals().get("_LAUNCH_LOCK"); last = globals().get("_LAST_LAUNCH")
+    if lk is None:
+        return
+    with lk:
+        wait = last.value + LAUNCH_GAP_S - _t.time()
+        if wait > 0:
+            _t.sleep(wait)
+        last.value = _t.time()
+
+
 def run_one(args):
     acf, param, n_rep, seed, num_iter = args
     d, out, log, tag = cell_paths(acf, param, n_rep, seed)
@@ -97,10 +125,19 @@ def run_one(args):
     for attempt in range(6):
         pref = tempfile.mkdtemp(prefix="mlpref_"); tmp = tempfile.mkdtemp(prefix="mltmp_")
         env["MATLAB_PREFDIR"] = pref; env["TMPDIR"] = tmp
+        _throttle_launch()                          # space this checkout from other workers'
+        timed_out = False
         try:
             with open(log, "w") as fh:
-                rc = subprocess.run(cmd, cwd=HERE, env=env,
-                                    stdout=fh, stderr=subprocess.STDOUT).returncode
+                rc = subprocess.run(cmd, cwd=HERE, env=env, stdout=fh,
+                                    stderr=subprocess.STDOUT, timeout=RUN_TIMEOUT_S).returncode
+        except subprocess.TimeoutExpired:
+            rc, timed_out = -9, True                # hung in checkout (MSH wedge) -> killed, retry
+            try:
+                with open(log, "a") as fh:
+                    fh.write("\n[HARNESS] run exceeded RUN_TIMEOUT_S -> killed, retrying\n")
+            except Exception:
+                pass
         finally:
             shutil.rmtree(pref, ignore_errors=True); shutil.rmtree(tmp, ignore_errors=True)
         if rc == 0 and os.path.exists(out):
@@ -109,10 +146,10 @@ def run_one(args):
             is_5001 = "5001" in open(log).read()
         except Exception:
             is_5001 = False
-        if not is_5001:
-            return tag, f"FAIL(rc={rc})"          # real failure (e.g. anpei bug)
-        _t.sleep(20 + 10*attempt + _r.uniform(0, 8))   # license blip -> back off, retry
-    return tag, "FAIL(5001 x6)"
+        if not (is_5001 or timed_out):
+            return tag, f"FAIL(rc={rc})"            # real failure (e.g. a code bug)
+        _t.sleep(20 + 10*attempt + _r.uniform(0, 8))   # license blip / hang -> back off, retry
+    return tag, "FAIL(retry x6)"
 
 
 def collect():
@@ -169,7 +206,10 @@ def main():
     os.environ["STUDY_DISPLAY"] = display      # inherited by pool workers (fork)
     done = 0
     try:
-        with ProcessPoolExecutor(max_workers=args.workers) as ex:
+        import multiprocessing as _mp
+        _lock = _mp.Lock(); _last = _mp.Value('d', 0.0)   # shared launch throttle (see _throttle_launch)
+        with ProcessPoolExecutor(max_workers=args.workers,
+                                 initializer=_pool_init, initargs=(_lock, _last)) as ex:
             futs = {ex.submit(run_one, g): g for g in grid}
             for fut in as_completed(futs):
                 tag, status = fut.result()

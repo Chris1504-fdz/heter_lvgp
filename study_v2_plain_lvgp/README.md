@@ -29,11 +29,22 @@ PY=/data/zhq7531/envs/ml_gp_env/bin/python        # for the launcher (scipy/pand
 # smoke / toy probe: ei,lcb,pi × n_rep{3,5,10} × 1 seed, 2 workers
 $PY run_sweep.py --toy --seeds 1 --workers 2
 
-# full sweep: 3 acqs × n_rep{3,5,10} × 30 seeds = 270 runs
-$PY run_sweep.py --seeds 30 --workers 12 2>&1 | tee sweep.log
+# full sweep: 3 acqs × n_rep{3,5,10} × 30 seeds = 270 runs  (~280 s/run; ~1.5 h at 8 workers)
+$PY run_sweep.py --seeds 30 --workers 8 2>&1 | tee sweep.log
 $PY run_sweep.py --collect-only                   # -> sweep_results.csv
 ```
 
 The launcher starts one shared Xvfb and runs one isolated `matlab -batch study_driver(...)` per
-cell (isolated PREFDIR/TMPDIR, retry on transient 5001 license errors) — identical machinery to
-`study_v2/run_sweep.py`. Outputs `results/<acf>/nrep<NN>/seed<NN>.mat`.
+cell (isolated PREFDIR/TMPDIR). Outputs `results/<acf>/nrep<NN>/seed<NN>.mat`.
+
+**Licensing (important).** MATLAB uses online (MHLM) licensing via the MathWorks Service Host (MSH).
+A *burst* of simultaneous launches can wedge the MSH, after which every `matlab` hangs at startup
+(checkout never returns). To prevent that, `run_sweep.py` spaces launches `LAUNCH_GAP_S=8 s` apart
+(shared throttle across workers) and kills+retries any run that hangs past `RUN_TIMEOUT_S`. Keep
+`--workers` moderate (≤ ~8). If MATLAB still hangs at checkout (0 % CPU, no `.log` output), the MSH
+is wedged — reset it (per MathWorks support) and rerun:
+
+```bash
+kill $(pgrep -x MATLAB) $(ps -eo pid,comm | awk '$2 ~ /^MathWorksServic/ {print $1}') 2>/dev/null
+rm -rf ~/.MathWorks/ServiceHost ~/.MATLABConnector      # MSH rebuilds fresh on next launch
+```
