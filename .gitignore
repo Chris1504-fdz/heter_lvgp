@@ -9,7 +9,7 @@ hetero_study_bundle.tar.gz
 
 # --- TensorBoard logs (large, regenerable) ---
 tb/
-
+resources/
 # --- trash / backups ---
 study/_review_trash/
 *.orig
