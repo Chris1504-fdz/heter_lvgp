@@ -1,9 +1,0 @@
-problem,model,acf,param,n_rep,seed,final_best,runtime
-branin_hetero,separate_gp,ei,,10,2,-3.313649204090125,3.32228422164917
-branin_hetero,separate_gp,ei,,10,1,-0.42040785624463106,3.2195849418640137
-branin_hetero,categorical_kernel,ei,,10,2,2.607794816599945,6.52183985710144
-branin_hetero,categorical_kernel,ei,,10,1,0.8663363589746431,6.488961219787598
-branin_hetero,heter_LVGP,ei,,10,2,0.7888874654819908,54.778504
-branin_hetero,heter_LVGP,ei,,10,1,3.613855857259815,55.854737
-branin_hetero,standard_LVGP,ei,,10,2,3.065297724750292,63.14521
-branin_hetero,standard_LVGP,ei,,10,1,3.6655030263680652,58.968192
