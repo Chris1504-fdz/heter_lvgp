@@ -1,4 +1,3 @@
-cat > .gitignore <<'EOF'
 # --- huge MATLAB binaries: GitHub rejects files >100 MB ---
 matlab_R2026a_Linux.zip
 matlab_installer/
@@ -25,10 +24,11 @@ heterockedastic_new_inv/
 study/
 study_v2_acqf/
 
+# --- archived old versions (moved into previous_ver/) ---
+previous_ver/
 
 # --- (optional) uncomment for a lean CODE-ONLY repo, dropping experiment outputs ---
 # **/results/
 # **/plots/
 # plots_study/
 # *.csv
-EOF
