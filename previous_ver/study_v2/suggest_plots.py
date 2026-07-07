@@ -21,7 +21,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-import analyze as A   # load_runs, cfg_key, label, ground_truth_min, config_colors
+import previous_ver.study_v2.analyze as A   # load_runs, cfg_key, label, ground_truth_min, config_colors
 
 OUT = os.path.join(A.HERE, "plots", "suggestions")
 os.makedirs(OUT, exist_ok=True)

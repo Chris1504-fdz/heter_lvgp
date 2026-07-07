@@ -15,7 +15,9 @@ import time
 import numpy as np
 from scipy.optimize import minimize as _minimize
 
-from . import problem, acquisitions
+from . import acquisitions
+
+from . import problem
 from .model import PerCategoryHGPR
 
 GRID_N = 256           # dense seed grid for the 1-D continuous search per category

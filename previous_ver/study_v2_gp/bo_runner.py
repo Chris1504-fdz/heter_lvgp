@@ -14,7 +14,7 @@ import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from run_sweep import cell_paths
+from previous_ver.study_v2_gp.run_sweep import cell_paths
 
 
 def _parse_param(s):
@@ -34,7 +34,7 @@ def main():
 
     import torch
     torch.set_num_threads(1)
-    from utils.bo import run_bo
+    from previous_ver.study_v2_gp.utils.bo import run_bo
 
     res = run_bo(args.acf, param, args.n_rep, args.seed, args.num_iter)
     meta = res.pop("meta")

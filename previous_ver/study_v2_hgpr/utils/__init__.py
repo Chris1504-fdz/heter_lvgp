@@ -14,7 +14,7 @@ so study_v2's StudyResults gallery loads it and the top-level comparison overlay
 `problem` is light (numpy/scipy). The BO worker path imports `utils.bo` directly, which
 does NOT trigger the results/plotting stack -- workers stay lean.
 """
-from . import problem
+from ....study_v2_hgpr.utils import problem
 
 __all__ = ["StudyResults", "compare_studies", "problem"]
 

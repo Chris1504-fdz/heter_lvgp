@@ -71,7 +71,7 @@ def run_one(args):
     import warnings; warnings.filterwarnings("ignore")        # silence gpytorch noise-clamp spam
     import torch
     torch.set_num_threads(1)                                  # ~ MATLAB -singleCompThread
-    from utils.bo import run_bo
+    from previous_ver.study_v2_gp.utils.bo import run_bo
     try:
         res = run_bo(acf, param, n_rep, seed, num_iter)
     except Exception as e:                                    # don't kill the pool on one bad cell

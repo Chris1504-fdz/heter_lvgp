@@ -18,8 +18,8 @@ matplotlib.use("Agg")
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from utils import StudyResults                          # noqa: E402
-from utils.problem import CONFIG_ORDER, acf_tag         # noqa: E402
+from previous_ver.study_v2.utils import StudyResults                          # noqa: E402
+from previous_ver.study_v2.utils.problem import CONFIG_ORDER, acf_tag         # noqa: E402
 
 PLOTS = os.path.join(HERE, "plots")
 MAIN = os.path.join(PLOTS, "main")

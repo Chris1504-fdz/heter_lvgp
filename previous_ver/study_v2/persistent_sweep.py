@@ -13,7 +13,7 @@ License is checked out ONCE per session (N total), held for its lifetime.
 Resumable: only cells without a .mat are queued.
 """
 import argparse, os, sys, time, subprocess, tempfile, shutil
-import run_sweep as R   # reuse ACQ_CONFIGS, N_REP_LIST, cell_paths, MATLAB, start_shared_xvfb, HERE
+import previous_ver.study_v2.run_sweep as R   # reuse ACQ_CONFIGS, N_REP_LIST, cell_paths, MATLAB, start_shared_xvfb, HERE
 
 HERE = R.HERE
 

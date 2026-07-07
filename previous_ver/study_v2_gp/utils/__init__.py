@@ -13,7 +13,7 @@ plus a compare_studies() overlay for the head-to-head LVGP-vs-GP figures:
 `problem` is light (numpy/scipy). The BO worker path imports `utils.bo` directly, which
 does NOT trigger the results/plotting stack -- workers stay lean.
 """
-from . import problem
+from ....study_v2_gp.utils import problem
 
 __all__ = ["StudyResults", "compare_studies", "problem"]
 

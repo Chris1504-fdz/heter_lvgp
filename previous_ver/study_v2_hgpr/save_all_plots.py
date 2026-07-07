@@ -21,8 +21,8 @@ import matplotlib   # NB: Agg is set only under __main__ (below), so importing t
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from utils import StudyResults, compare_studies, compare_studies_multi   # noqa: E402
-from utils.problem import CONFIG_ORDER, acf_tag           # noqa: E402
+from previous_ver.study_v2_hgpr.utils import StudyResults, compare_studies          # noqa: E402
+from previous_ver.study_v2_hgpr.utils.problem import CONFIG_ORDER, acf_tag           # noqa: E402
 
 PLOTS = os.path.join(HERE, "plots")
 MAIN = os.path.join(PLOTS, "main")
@@ -96,34 +96,18 @@ def save_single_runs(study):
         _save(study.plot_single_run(rel), SINGLE, f"single_run_{acf}{plabel}_nr10_s1.png")
 
 
-def save_comparison(study, others):
-    """Overlay this categorical-GP study against `others` (list of (StudyResults, label)).
-    Produces pairwise figures vs each, plus a single N-way figure with all studies."""
-    this_label = "Categorical GP"
-    print("plots/comparison (categorical GP vs others):")
-    for s, lab in others:                                    # pairwise vs each study
-        tag = lab.lower().replace(" ", "").replace("-", "")
-        for metric in ("true_best_sampled", "best_y"):       # noiseless (headline) + noisy
-            for nr in (3, 5, 10):
-                try:
-                    fig = compare_studies(study, s, metric=metric, n_rep=nr,
-                                          labels=(this_label, lab))
-                except ValueError as e:
-                    print(f"  skip {lab} {metric} nrep{nr:02d}: {e}"); continue
-                _save(fig, COMPARE, f"compare_{tag}_{metric}_nrep{nr:02d}.png")
-    series = list(others) + [(study, this_label)]            # e.g. LVGP, Per-category, Categorical
-    if len(series) >= 3:                                      # the 3-way headline
-        for metric in ("true_best_sampled", "best_y"):       # noiseless (headline) + noisy
-            for nr in (3, 5, 10):
-                try:
-                    fig = compare_studies_multi(series, metric=metric, n_rep=nr)
-                except ValueError as e:
-                    print(f"  skip 3-way {metric} nrep{nr:02d}: {e}"); continue
-                _save(fig, COMPARE, f"compare_ALL_{metric}_nrep{nr:02d}.png")
+def save_comparison(study, lvgp):
+    print("plots/comparison (per-category GP vs LVGP):")
+    for metric in ("true_best_sampled", "best_y"):       # noiseless (headline) + noisy
+        for nr in (3, 5, 10):
+            try:
+                fig = compare_studies(study, lvgp, metric=metric, n_rep=nr)
+            except ValueError as e:
+                print(f"  skip {metric} nrep{nr:02d}: {e}"); continue
+            _save(fig, COMPARE, f"compare_{metric}_nrep{nr:02d}.png")
 
 
-def main(results_dir="results", lvgp_dir="../study_v2/results",
-         percat_dir="../study_v2_gp/results", single_only=False, compare=True):
+def main(results_dir="results", lvgp_dir="../study_v2/results", single_only=False, compare=True):
     study = StudyResults.load(os.path.join(HERE, results_dir))
     if not study.runs:
         print("no results yet — run the sweep first."); return
@@ -133,19 +117,15 @@ def main(results_dir="results", lvgp_dir="../study_v2/results",
         save_analysis(study)
     save_single_runs(study)
     if compare and not single_only:
-        others = []
-        for d, lab in [(lvgp_dir, "LVGP"), (percat_dir, "Per-category GP")]:
-            path = d if os.path.isabs(d) else os.path.join(HERE, d)
-            if os.path.isdir(path):
-                s = StudyResults.load(path)
-                if s.runs:
-                    others.append((s, lab))
-                else:
-                    print(f"(no runs under {path}; skipping {lab})")
+        lvgp_path = lvgp_dir if os.path.isabs(lvgp_dir) else os.path.join(HERE, lvgp_dir)
+        if os.path.isdir(lvgp_path):
+            lvgp = StudyResults.load(lvgp_path)
+            if lvgp.runs:
+                save_comparison(study, lvgp)
             else:
-                print(f"({lab} dir {path} not found; skipping)")
-        if others:
-            save_comparison(study, others)
+                print(f"(no LVGP runs under {lvgp_path}; skipping comparison)")
+        else:
+            print(f"(LVGP dir {lvgp_path} not found; skipping comparison)")
     print("done.")
 
 
@@ -153,9 +133,7 @@ if __name__ == "__main__":
     matplotlib.use("Agg")                # headless-safe for command-line use
     ap = argparse.ArgumentParser()
     ap.add_argument("--single", action="store_true", help="only single_runs")
-    ap.add_argument("--no-compare", action="store_true", help="skip the comparison overlays")
-    ap.add_argument("--lvgp", default="../study_v2/results", help="LVGP results dir")
-    ap.add_argument("--percat-gp", default="../study_v2_gp/results", help="per-category GP results dir")
+    ap.add_argument("--no-compare", action="store_true", help="skip the LVGP overlays")
+    ap.add_argument("--lvgp", default="../study_v2/results", help="LVGP results dir for the overlay")
     args = ap.parse_args()
-    main(lvgp_dir=args.lvgp, percat_dir=args.percat_gp,
-         single_only=args.single, compare=not args.no_compare)
+    main(lvgp_dir=args.lvgp, single_only=args.single, compare=not args.no_compare)

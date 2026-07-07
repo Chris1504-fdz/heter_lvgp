@@ -15,7 +15,7 @@ saved .npz schema is identical), plus compare_studies()/compare_studies_multi() 
 `problem` is light (numpy/scipy). The BO worker path imports `utils.bo` directly, which
 does NOT trigger the results/plotting stack -- workers stay lean.
 """
-from . import problem
+from ....study_v2_cat.utils import problem
 
 __all__ = ["StudyResults", "compare_studies", "compare_studies_multi",
            "compare_summary_heatmaps", "compare_variance_convergence",

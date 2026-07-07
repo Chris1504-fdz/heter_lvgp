@@ -19,11 +19,10 @@ import time
 import numpy as np
 from scipy.optimize import minimize as _minimize
 
-from . import problem, acquisitions
-# Method C: ONE joint MixedSingleTaskGP. Aliased to PerCategoryGPs so this BO loop --
-# enumerate categories, optimize each one's acquisition, take the best -- is identical to
-# study_v2_gp's; only the GP under the hood (joint vs 5 independent) differs.
-from .model import MixedCategoryGP as PerCategoryGPs
+from . import acquisitions
+
+from . import problem
+from .model import PerCategoryGPs
 from .aleatoric import AleatoricModels
 
 GRID_N = 256           # dense seed grid for the 1-D continuous search per category
@@ -146,5 +145,5 @@ def run_bo(acf, param, n_rep, seed, num_iter):
         n_initial=np.asarray([n_initial]),
         var_fctr=problem.VAR_FCTR,
         meta=dict(acf=acf, acf_param=float(param), n_rep=int(n_rep), seed=int(seed),
-                  num_iter=int(num_iter), runtime=float(runtime), model="mixed_cat"),
+                  num_iter=int(num_iter), runtime=float(runtime), model="percat_gp"),
     )

@@ -15,7 +15,7 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import analyze as A
+import previous_ver.study_v2.analyze as A
 
 VAR_FCTR = np.array([15, 2, 8, 0, 10.])
 

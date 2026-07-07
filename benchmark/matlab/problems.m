@@ -9,9 +9,11 @@ switch name
     case 'branin_hetero'
         var_fctr   = [15, 2, 8, 0, 10];               % Branin x2 value per level
         noise_muls = [1.00, 0.70, 0.90, 0.50, 1.20]*10;
-        f   = @(x1, lv) (var_fctr(lv) - 5.1/(4*pi^2)*x1.^2 + 5/pi*x1 - 6).^2 ...
+        % NOTE: `var_fctr(lv)` keeps var_fctr's (row) orientation, so reshape any level-indexed
+        % lookup to size(x1) before combining with x1 (else row-minus-column broadcasts to a matrix).
+        f   = @(x1, lv) (reshape(var_fctr(lv), size(x1)) - 5.1/(4*pi^2)*x1.^2 + 5/pi*x1 - 6).^2 ...
                         + 10*(1 - 1/(8*pi))*cos(x1) + 10;
-        sig = @(x1, lv) 0.135 .* exp((0.15 .* x1).^2) .* noise_muls(lv);
+        sig = @(x1, lv) 0.135 .* exp((0.15 .* x1).^2) .* reshape(noise_muls(lv), size(x1));
         lb = -5; ub = 10; n_lv = 5;
 
     % --- 8 stubs: mirror each from utils/problems.py, then delete this comment ---

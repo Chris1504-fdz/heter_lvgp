@@ -21,8 +21,8 @@ import matplotlib   # NB: Agg is set only under __main__ (below), so importing t
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from utils import StudyResults, compare_studies          # noqa: E402
-from utils.problem import CONFIG_ORDER, acf_tag           # noqa: E402
+from previous_ver.study_v2_gp.utils import StudyResults, compare_studies          # noqa: E402
+from previous_ver.study_v2_gp.utils.problem import CONFIG_ORDER, acf_tag           # noqa: E402
 
 PLOTS = os.path.join(HERE, "plots")
 MAIN = os.path.join(PLOTS, "main")
