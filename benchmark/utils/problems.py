@@ -13,6 +13,8 @@ from dataclasses import dataclass, field
 from typing import Callable, List
 import numpy as np
 
+from . import doe as _doe                                # SLHD / space-filling DOE generators
+
 
 @dataclass
 class ProblemSpec:
@@ -21,16 +23,30 @@ class ProblemSpec:
       sigma : sigma(x1_array, level_1based) -> heteroscedastic noise std
       lb,ub : continuous domain of x1
       n_levels : number of categorical levels (1-based 1..n_levels)
-    DOE knobs match study_driver.m (2 maximin-LHS x1 locations on a 1/6 inset, shared across levels)."""
+      n_init : TOTAL initial design points (all levels);  num_iter : BO iterations
+    n_init/num_iter default to this problem's row of doe.PROBLEM_GRID (= resources/init_doe_iter.xlsx)."""
     name: str
     f: Callable
     sigma: Callable
     lb: float
     ub: float
     n_levels: int
-    n_tr_lv: int = 2
+    n_init: int = 0                                  # 0 -> take from PROBLEM_GRID
+    num_iter: int = 0                                # 0 -> take from PROBLEM_GRID
     edge_buf: float = 1.0 / 6.0
     meta: dict = field(default_factory=dict)         # optional: cat_values, noise_muls, notes
+
+    def __post_init__(self):
+        g = _doe.PROBLEM_GRID.get(self.name)
+        if not self.n_init:
+            self.n_init = g.n_init if g else 2 * self.n_levels
+        if not self.num_iter:
+            self.num_iter = g.num_iter if g else 50
+
+    @property
+    def n_tr_lv(self):
+        """Design points per level (floor). `n_init % n_levels` levels get one extra -- see doe.make_doe."""
+        return self.n_init // self.n_levels
 
     # convenience
     def f_true_level(self, x1, level):
@@ -73,8 +89,51 @@ BRANIN = ProblemSpec(
 
 
 # ======================================================================================
-#  8 stubs -- replace `f`/`sigma`/`lb`/`ub`/`n_levels` with the user's ground-truth equations,
-#  then mirror each in matlab/problems.m.  Registered below only when filled in.
+#  TP-2  Six-Hump Camel-Back (redesigned) -- 1 continuous + 4 levels
+# ======================================================================================
+_CAMEL_VALS = [0.2, 0.4, 0.7, 1.0]
+_CAMEL_MULS = [2.0, 3.5, 1.5, 5.0]
+def _camel_f(x1, level):
+    x1 = np.asarray(x1, float); x2 = _CAMEL_VALS[level - 1]
+    return (4 - 2.1 * x1 ** 2 + x1 ** 4 / 3) * x1 ** 2 + x1 * x2 + (-4 + 4 * x2 ** 2) * x2 ** 2
+def _camel_sigma(x1, level):
+    x1 = np.asarray(x1, float)
+    return 0.05 * np.exp((0.4 * x1) ** 2) * _CAMEL_MULS[level - 1]
+CAMEL = ProblemSpec("sixhump_camel", _camel_f, _camel_sigma, -2.0, 2.0, 4,
+                    meta=dict(cat_values=_CAMEL_VALS, noise_muls=_CAMEL_MULS))
+
+# ======================================================================================
+#  TP-3  Griewank 2-D (redesigned) -- 1 continuous + 4 levels
+# ======================================================================================
+_GRIE_VALS = [0.0, 0.5, 1.0, 1.5]
+_GRIE_MULS = [2.0, 1.0, 3.5, 1.5]
+def _griewank2d_f(x1, level):
+    x1 = np.asarray(x1, float); x2 = _GRIE_VALS[level - 1]
+    return (x1 ** 2 + x2 ** 2) / 4000 - np.cos(x1) * np.cos(x2 / np.sqrt(2)) + 1
+def _griewank2d_sigma(x1, level):
+    x1 = np.asarray(x1, float)
+    return 0.04 * (1 + 0.08 * x1 ** 2) * _GRIE_MULS[level - 1]
+GRIEWANK2D = ProblemSpec("griewank_2d", _griewank2d_f, _griewank2d_sigma, -5.0, 5.0, 4,
+                         meta=dict(cat_values=_GRIE_VALS, noise_muls=_GRIE_MULS))
+
+# ======================================================================================
+#  TP-4  Ackley 2-D (replaces Goldstein-Price) -- 1 continuous + 4 levels
+# ======================================================================================
+_ACK_VALS = [0.0, 0.5, 1.5, 2.5]
+_ACK_MULS = [1.0, 2.0, 1.5, 3.0]
+def _ackley2d_f(x1, level):
+    x1 = np.asarray(x1, float); x2 = _ACK_VALS[level - 1]; a, b, c = 20.0, 0.2, 2 * np.pi
+    return (-a * np.exp(-b * np.sqrt((x1 ** 2 + x2 ** 2) / 2))
+            - np.exp((np.cos(c * x1) + np.cos(c * x2)) / 2) + a + np.e)
+def _ackley2d_sigma(x1, level):
+    x1 = np.asarray(x1, float)
+    return 0.10 * (1 + 0.15 * x1 ** 2) * _ACK_MULS[level - 1]
+ACKLEY2D = ProblemSpec("ackley_2d", _ackley2d_f, _ackley2d_sigma, -3.0, 3.0, 4,
+                       meta=dict(cat_values=_ACK_VALS, noise_muls=_ACK_MULS))
+
+# ======================================================================================
+#  Phase-2 multi-dim problems (TP-5/6/7, ENG-1/2/3) -- stubs until the framework is
+#  generalized to d continuous dimensions.
 # ======================================================================================
 def _todo(name):
     def _f(x1, level):
@@ -86,11 +145,18 @@ def _stub(name, n_levels=5, lb=-5.0, ub=10.0):
     return ProblemSpec(name=name, f=_todo(name), sigma=_todo(name), lb=lb, ub=ub, n_levels=n_levels)
 
 
-# Registry. Add the 8 as you supply equations (replace _stub(...) with a real ProblemSpec).
+# Registry. 1-D problems are live; the 6 multi-dim ones are stubs until the d-dim generalization.
 PROBLEMS = {
-    "branin_hetero": BRANIN,
-    "fn2": _stub("fn2"), "fn3": _stub("fn3"), "fn4": _stub("fn4"), "fn5": _stub("fn5"),
-    "fn6": _stub("fn6"), "fn7": _stub("fn7"), "fn8": _stub("fn8"), "fn9": _stub("fn9"),
+    "branin_hetero": BRANIN,        # TP-1  (1-D, 5 levels)
+    "sixhump_camel": CAMEL,         # TP-2  (1-D, 4 levels)
+    "griewank_2d":   GRIEWANK2D,    # TP-3  (1-D, 4 levels)
+    "ackley_2d":     ACKLEY2D,      # TP-4  (1-D, 4 levels)
+    "griewank_10d":  _stub("griewank_10d"),   # TP-5  (9-D)  Phase 2
+    "ackley_10d":    _stub("ackley_10d"),      # TP-6  (9-D)  Phase 2
+    "rastrigin_6d":  _stub("rastrigin_6d"),    # TP-7  (5-D)  Phase 2
+    "golinski":      _stub("golinski"),        # ENG-1 (6-D)  Phase 2
+    "piston":        _stub("piston"),          # ENG-2 (6-D)  Phase 2
+    "otl_circuit":   _stub("otl_circuit"),     # ENG-3 (5-D)  Phase 2
 }
 
 
@@ -132,29 +198,34 @@ def _maximin_lhs_1d(rng, n, n_iter=8000):
     return cand[int(gaps.argmax())]
 
 
-def initial_doe(spec, n_rep, seed=None, rng=None):
-    """Shared-LHS replicated initial design (mirrors study_driver.m). Returns dict of arrays:
-    X_sample (n_tr,2)[x1,level], Y_sample (mean), Var_sample (var), Y_rep (n_tr,n_rep), lhs_shared."""
+DOE_MODE = "slhd"                                       # benchmark default (see notebooks/doe.ipynb)
+
+
+def initial_doe(spec, n_rep, seed=None, rng=None, mode=DOE_MODE, n_init=None):
+    """Replicated initial design of spec.n_init TOTAL points. Default = SLHD over the FULL domain
+    [lb,ub]: each level is an LHS AND the union is a full LHS (see notebooks/doe.ipynb). If n_init is
+    not a multiple of n_levels, `n_init % n_levels` levels get one extra point.
+    Each design point is evaluated n_rep times (heteroscedastic replicates). Both engines consume this
+    via utils/doe_cache.py, so the MATLAB drivers cannot drift from it.
+    Returns: X_sample (n_tr,2)[x1,level], Y_sample (replicate mean), Var_sample (replicate var),
+    Y_rep (n_tr,n_rep), doe {level: sorted x1 array}."""
     if rng is None:
         rng = np.random.default_rng(seed)
-    lo = spec.lb + spec.edge_buf * (spec.ub - spec.lb)
-    hi = spec.ub - spec.edge_buf * (spec.ub - spec.lb)
-    A = _maximin_lhs_1d(rng, spec.n_tr_lv, n_iter=8000)
-    lhs_shared = A * (hi - lo) + lo
-    n_tr = spec.n_levels * spec.n_tr_lv
+    n_tr = int(spec.n_init if n_init is None else n_init)
+    doe = _doe.make_doe(mode, rng, spec.lb, spec.ub, spec.n_levels, n_init=n_tr)
     X_sample = np.zeros((n_tr, 2)); Y_sample = np.zeros(n_tr)
     Var_sample = np.zeros(n_tr); Y_rep = np.zeros((n_tr, n_rep))
     row = 0
     for i in range(1, spec.n_levels + 1):
-        for j in range(spec.n_tr_lv):
-            y_rep = noisy_eval(spec, lhs_shared[j], i, n_rep, rng)
-            X_sample[row] = [lhs_shared[j], i]
+        for xj in doe[i]:                               # this level's SLHD x1 locations
+            y_rep = noisy_eval(spec, xj, i, n_rep, rng)
+            X_sample[row] = [xj, i]
             Y_sample[row] = y_rep.mean()
             Var_sample[row] = y_rep.var(ddof=1)
             Y_rep[row] = y_rep
             row += 1
     return dict(X_sample=X_sample, Y_sample=Y_sample, Var_sample=Var_sample,
-                Y_rep=Y_rep, lhs_shared=lhs_shared)
+                Y_rep=Y_rep, doe=doe)
 
 
 def ground_truth_min(spec, n=4000):

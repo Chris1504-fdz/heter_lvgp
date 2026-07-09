@@ -15,6 +15,7 @@ from scipy.optimize import minimize as _minimize
 
 from . import problems as P
 from . import acquisitions
+from . import doe_cache
 
 GRID_N = 256
 N_TOP = 3
@@ -43,14 +44,17 @@ def _argbest_over_categories(per_level_fn, levels, lb, ub):
 
 
 def run_bo(spec, model_cls, acf, param, n_rep, seed, num_iter, model_name="python"):
-    """One BO cell. spec = ProblemSpec; model_cls = python Model class. Returns dict for np.savez."""
+    """One BO cell. spec = ProblemSpec; model_cls = python Model class. Returns the SCHEMA v2 dict
+    for np.savez: enough to re-analyze the run (raw replicates, initial block, true f/sigma at every
+    sampled point, acquisition value + posterior at the recommended optimum) without re-running it."""
     t0 = time.time()
     lb, ub = spec.lb, spec.ub
-    rng = np.random.default_rng(seed)
 
-    doe = P.initial_doe(spec, n_rep, rng=rng)
-    Xs = doe["X_sample"]; Ys = doe["Y_sample"].copy(); Vs = doe["Var_sample"].copy()
+    ds = doe_cache.load(spec.name, seed, n_rep)          # SHARED initial design (CRN): identical for all 4 models
+    Xs = ds["X_sample"]; Ys = ds["Y_sample"].copy(); Vs = ds["Var_sample"].copy()
+    Y_rep_init = np.asarray(ds["Y_rep"], float)
     n_initial = Xs.shape[0]
+    rng = np.random.default_rng([seed, 1])               # iteration-noise stream (distinct from the DOE's rng)
 
     data = {}
     for lv in spec.levels:
@@ -58,17 +62,26 @@ def run_bo(spec, model_cls, acf, param, n_rep, seed, num_iter, model_name="pytho
         data[int(lv)] = dict(x1=list(Xs[m, 0]), y_mean=list(Ys[m]), y_var=list(Vs[m]))
 
     X_sampled = list(map(list, Xs)); Y_sampled = list(Ys); Y_var_sampled = list(Vs)
+    Y_rep_sampled = [list(row) for row in Y_rep_init]     # raw replicates, initial block first
     Y_min_history, Y_min_est, X_min_est = [], [], []
     X_next_history, Y_next_history, Y_var_next_history = [], [], []
-    needs_r = acquisitions.needs_aleatoric(acf)
+    acf_val, mu_at_est, s_at_est, r_at_est = [], [], [], []
+    needs_r = acquisitions.needs_aleatoric(acf)          # does the ACQUISITION consume r?
 
     for _ in range(num_iter):
-        model = model_cls.fit(data, needs_r=needs_r)
+        # Always fit the aleatoric poly (a cheap ridge): the acquisition only uses it when needs_r,
+        # but r_at_est is recorded every iteration so the noise-at-best plot never needs a refit.
+        model = model_cls.fit(data, needs_r=True)
         ymin = float(np.min(Y_sampled))
 
         mean_fn = lambda lv: (lambda xs: model.predict(lv, xs, observation_noise=False)[0])
         lv_est, x_est, y_est = _argbest_over_categories(mean_fn, model.levels, lb, ub)
         X_min_est.append([x_est, lv_est]); Y_min_est.append(y_est)
+
+        xe = np.array([x_est])                            # posterior at the recommended optimum
+        mu_e, s_e = model.mean_std(lv_est, xe)
+        mu_at_est.append(float(np.ravel(mu_e)[0])); s_at_est.append(float(np.ravel(s_e)[0]))
+        r_at_est.append(float(np.ravel(model.r(lv_est, xe))[0]))      # aleatoric VARIANCE
 
         def acq_fn(lv):
             def g(xs):
@@ -76,34 +89,56 @@ def run_bo(spec, model_cls, acf, param, n_rep, seed, num_iter, model_name="pytho
                 r = model.r(lv, xs) if needs_r else None
                 return acquisitions.evaluate(acf, mu, s, ymin, r=r, param=param)
             return g
-        lv_next, x_next, _ = _argbest_over_categories(acq_fn, model.levels, lb, ub)
+        lv_next, x_next, u_next = _argbest_over_categories(acq_fn, model.levels, lb, ub)
+        acf_val.append(float(u_next))                     # minimized U_negate at the chosen point
 
         y_rep = P.noisy_eval(spec, x_next, lv_next, n_rep, rng)
         y_mean, y_var = float(y_rep.mean()), float(y_rep.var(ddof=1))
         data[lv_next]["x1"].append(x_next); data[lv_next]["y_mean"].append(y_mean)
         data[lv_next]["y_var"].append(y_var)
         X_sampled.append([x_next, lv_next]); Y_sampled.append(y_mean); Y_var_sampled.append(y_var)
+        Y_rep_sampled.append(list(np.asarray(y_rep, float)))
         X_next_history.append([x_next, lv_next]); Y_next_history.append(y_mean)
         Y_var_next_history.append(y_var)
         Y_min_history.append(float(np.min(Y_sampled)))
 
     Y_sampled_arr = np.asarray(Y_sampled)
+    X_sampled_arr = np.asarray(X_sampled, float)
     bi = int(np.argmin(Y_sampled_arr))
     runtime = time.time() - t0
+
+    # noise-free objective + true noise std at every sampled point -> the run stays re-scorable
+    # even if problems.py is later edited.
+    f_true = np.array([float(spec.f_true_level(x, int(lv))) for x, lv in X_sampled_arr])
+    sig_true = np.array([float(spec.sigma_level(x, int(lv))) for x, lv in X_sampled_arr])
+
     return dict(
         Y_min_history=np.asarray(Y_min_history),
-        X_sampled=np.asarray(X_sampled, float),
+        X_sampled=X_sampled_arr,
         Y_sampled=Y_sampled_arr,
         Y_var_sampled=np.asarray(Y_var_sampled),
+        Y_rep_sampled=np.asarray(Y_rep_sampled, float),          # (n_tr, n_rep) ALL raw replicates
         X_next_history=np.asarray(X_next_history, float),
         Y_next_history=np.asarray(Y_next_history),
         Y_var_next_history=np.asarray(Y_var_next_history),
         Y_min_est=np.asarray(Y_min_est),
         X_min_est=np.asarray(X_min_est, float),
+        acf_val=np.asarray(acf_val),                             # acquisition value at the chosen point
+        mu_at_est=np.asarray(mu_at_est),                         # posterior mean      @ X_min_est
+        s_at_est=np.asarray(s_at_est),                           # epistemic std       @ X_min_est
+        r_at_est=np.asarray(r_at_est),                           # aleatoric variance  @ X_min_est
+        X_init=np.asarray(Xs, float), Y_init=np.asarray(Ys, float), Y_rep_init=Y_rep_init,
+        f_true_sampled=f_true, sigma_true_sampled=sig_true,
         X_best_final=np.asarray(X_sampled[bi], float),
         Y_best_final=np.asarray([float(Y_sampled_arr[bi])]),
         Y_var_best_final=np.asarray([float(Y_var_sampled[bi])]),
         n_initial=np.asarray([n_initial]),
         meta=dict(problem=spec.name, model=model_name, acf=acf, acf_param=float(param),
-                  n_rep=int(n_rep), seed=int(seed), num_iter=int(num_iter), runtime=float(runtime)),
+                  n_rep=int(n_rep), seed=int(seed), num_iter=int(num_iter), runtime=float(runtime),
+                  schema_version=2, doe_mode=P.DOE_MODE, n_init=int(spec.n_init),
+                  n_levels=int(spec.n_levels), lb=float(lb), ub=float(ub),
+                  timestamp=time.strftime("%Y-%m-%dT%H:%M:%S"),
+                  # CRN holds for the INITIAL DESIGN only: python iteration noise is default_rng([seed,1]),
+                  # MATLAB's is rng(seed). Seed-pairing across engines is exact on X_init/Y_init, not after.
+                  noise_stream="python:default_rng([seed,1])"),
     )

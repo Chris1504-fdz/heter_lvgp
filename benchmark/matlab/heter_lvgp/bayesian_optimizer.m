@@ -44,6 +44,13 @@ Y_next_history = zeros(num_iter, 1);
 Y_var_next_history = zeros(num_iter, 1);
 Y_rep_next_history = cell(num_iter, 1);
 
+% Posterior at the RECOMMENDED optimum x_min_est, recorded every iteration (additive: read-only
+% probes of the already-fitted model, no effect on the search). Lets post-processing plot the
+% noise-at-best convergence without refitting anything.
+Mu_at_est = zeros(num_iter, 1);
+S_at_est  = zeros(num_iter, 1);
+R_at_est  = zeros(num_iter, 1);
+
 for i = 1:num_iter
 
     % Heteroscedastic LVGP model fitting using sample means and variances.
@@ -138,6 +145,14 @@ for i = 1:num_iter
     X_min_est(i,:) = x_min_est;
     U(i) = -U_min_est;
 
+    % Probe the (already fitted) model at the recommended optimum -- purely diagnostic.
+    % model.y_var_sample is the training variance vector THIS model was fitted on (set at fit time),
+    % so it stays correct even though y_var_sampled has already grown by this line.
+    pred_est = LVGP_predict_noise(x_min_est(:)', model.y_var_sample, model, 'MSE_on', true);
+    Mu_at_est(i) = pred_est.Y_hat(1);
+    S_at_est(i)  = sqrt(max(pred_est.MSE(1), 0));                  % epistemic std
+    R_at_est(i)  = predict_aleatoric_variance_local(x_min_est(:)', model);   % aleatoric VARIANCE
+
     fprintf('Iteration %u completed. ', i)
     fprintf('Current sample-mean minimum is %f. New variance estimate is %f.\n', y_min, y_var_next);
 end
@@ -150,6 +165,9 @@ result.Y_var_sampled = y_var_sampled;
 result.Y_rep_sampled = y_rep_sampled;
 result.acf_val = U;
 result.final_model = model;
+result.Mu_at_est = Mu_at_est;      % posterior mean     @ X_min_est, per iteration
+result.S_at_est  = S_at_est;       % epistemic std      @ X_min_est
+result.R_at_est  = R_at_est;       % aleatoric variance @ X_min_est
 result.Y_min_est = Y_min_est;
 result.X_min_est = X_min_est;
 

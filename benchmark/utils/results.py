@@ -27,16 +27,35 @@ def _load_cell(path):
             v = mm[k]
             meta[k] = str(v[0]) if v.dtype.kind in "US" else float(np.ravel(v)[0])
         g = lambda k: np.asarray(d[k])
-    return dict(
+
+    def opt(k, flat=True):
+        """A schema-v2 field, or None on a v1 cell that predates it."""
+        try:
+            v = np.asarray(g(k), float)
+        except Exception:
+            return None
+        return np.ravel(v) if flat else v
+
+    out = dict(
         problem=str(meta.get("problem")), model=str(meta.get("model")), acf=str(meta.get("acf")),
         param=float(meta.get("acf_param", float("nan"))), n_rep=int(float(meta.get("n_rep"))),
         seed=int(float(meta.get("seed"))), runtime=float(meta.get("runtime", 0.0)),
+        schema_version=int(float(meta.get("schema_version", 1))),
         Y_min_history=np.ravel(g("Y_min_history")).astype(float),
         X_sampled=g("X_sampled").astype(float).reshape(-1, 2),
         X_min_est=g("X_min_est").astype(float).reshape(-1, 2),
         Y_var_sampled=np.ravel(g("Y_var_sampled")).astype(float),
         n_initial=int(np.ravel(g("n_initial"))[0]),
     )
+    out.update(                                               # ---- schema v2 (None on a v1 cell) ----
+        Y_rep_sampled=opt("Y_rep_sampled", flat=False),       # (n_tr, n_rep) raw replicates
+        acf_val=opt("acf_val"),                               # acquisition value at the chosen point
+        mu_at_est=opt("mu_at_est"), s_at_est=opt("s_at_est"), r_at_est=opt("r_at_est"),
+        f_true_sampled=opt("f_true_sampled"), sigma_true_sampled=opt("sigma_true_sampled"),
+        X_init=opt("X_init", flat=False), Y_init=opt("Y_init"),
+        Y_rep_init=opt("Y_rep_init", flat=False),
+    )
+    return out
 
 
 class GridResults:

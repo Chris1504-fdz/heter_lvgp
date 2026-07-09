@@ -35,9 +35,12 @@ MATLAB = "/data/zhq7531/MATLAB/bin/matlab"
 XVFB_BIN = "/data/zhq7531/MATLAB/sys/Xvfb/bin/glnxa64/Xvfb"
 XVFB_LIBDIR = "/data/zhq7531/envs/xvfblib/lib"
 MATLAB_DRIVER = {"standard_LVGP": "standard_driver", "heter_LVGP": "heter_driver"}
-N_REP_LIST = [3, 5, 10]
+N_REP_LIST = [3, 10]
 LAUNCH_GAP_S = 8.0            # min seconds between MATLAB launches (MSH-safe)
-RUN_TIMEOUT_S = 1800         # kill+retry a MATLAB hung in license checkout
+# Kill+retry a MATLAB hung in license checkout. Sized against the MEASURED cost of one cell at the
+# real budget (heter_LVGP 475 s, standard_LVGP 422 s at 50 iters, standalone); these inflate several-
+# fold under 18-way CPU contention, and Phase-2's 200 iterations exceed the old 1800 s outright.
+RUN_TIMEOUT_S = 5400
 
 
 def start_shared_xvfb():
@@ -65,14 +68,65 @@ def cell_paths(function, model, acf, param, n_rep, seed):
             f"{function}/{model}/{tag}/nrep{n_rep:02d}/{base}")
 
 
+SCHEMA_VERSION = 2
+
+
+def _read_meta(path):
+    if path.endswith(".npz"):
+        with np.load(path, allow_pickle=True) as m:
+            m["Y_min_history"]                       # touch a real array: catches truncation
+            return dict(m["meta"].item())
+    import scipy.io
+    d = scipy.io.loadmat(path)
+    d["Y_min_history"]
+    mm = d["meta"][0, 0]
+    return {k: (str(mm[k][0]) if mm[k].dtype.kind in "US" else float(np.ravel(mm[k])[0]))
+            for k in mm.dtype.names}
+
+
+def cell_status(path, num_iter=None):
+    """'missing' | 'corrupt' | 'stale' | 'ok'. A cell counts as DONE only if it actually LOADS, was
+    written under the CURRENT schema, and used the SAME iteration budget. `os.path.exists` is not enough:
+      - a kill/timeout mid-write leaves a truncated file that would be skipped forever ('corrupt');
+      - the cell path does NOT encode num_iter, so a 5-iteration `--toy` cell (or an old-schema cell)
+        would otherwise be silently accepted in place of a full-budget one ('stale').
+    Both 'corrupt' and 'stale' are re-run rather than skipped."""
+    if not os.path.exists(path):
+        return "missing"
+    try:
+        meta = _read_meta(path)
+    except Exception:
+        return "corrupt"
+    if int(float(meta.get("schema_version", 1))) < SCHEMA_VERSION:
+        return "stale"
+    if num_iter is not None and int(float(meta.get("num_iter", -1))) != int(num_iter):
+        return "stale"
+    return "ok"
+
+
+def is_loadable(path, num_iter=None):
+    return cell_status(path, num_iter) == "ok"
+
+
 def _run_python(function, model, acf, param, n_rep, seed, num_iter, out):
     import torch
     torch.set_num_threads(1)
+    torch.manual_seed(seed)                     # botorch fitting can consume the torch RNG
     from utils import bo
     res = bo.run_bo(P.get(function), get_model(model).cls, acf, param, n_rep, seed, num_iter,
                     model_name=model)
     meta = res.pop("meta")
-    np.savez(out, meta=np.array(meta, dtype=object), **res)
+    # atomic: write to a temp file in the destination dir, verify it loads, then rename over target
+    fd, tmp = tempfile.mkstemp(suffix=".npz", dir=os.path.dirname(out)); os.close(fd)
+    try:
+        with open(tmp, "wb") as fh:
+            np.savez(fh, meta=np.array(meta, dtype=object), **res)
+        if not is_loadable(tmp):
+            raise IOError("wrote an unreadable .npz")
+        os.replace(tmp, out)
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
 
 
 # ---- MATLAB launch throttle (shared across workers) ----
@@ -93,10 +147,12 @@ def _throttle():
 
 
 def _run_matlab(function, model, acf, param, n_rep, seed, num_iter, out, log):
+    from utils import doe_cache
     driver = MATLAB_DRIVER[model]
+    doe_file = doe_cache.ensure(function, seed, n_rep)      # SHARED initial design (same file the python models load)
     pstr = "NaN" if param != param else repr(param)
     cmd = [MATLAB, "-nodisplay", "-singleCompThread", "-batch",
-           f"{driver}('{function}','{acf}',{pstr},{n_rep},{seed},{num_iter},'{out}')"]
+           f"{driver}('{function}','{acf}',{pstr},{n_rep},{seed},{num_iter},'{out}','{doe_file}')"]
     env = dict(os.environ)
     env["DISPLAY"] = os.environ.get("BENCH_DISPLAY", "")
     env["LD_LIBRARY_PATH"] = XVFB_LIBDIR + ":" + env.get("LD_LIBRARY_PATH", "")
@@ -113,7 +169,7 @@ def _run_matlab(function, model, acf, param, n_rep, seed, num_iter, out, log):
             rc, timed_out = -9, True
         finally:
             shutil.rmtree(pref, ignore_errors=True); shutil.rmtree(tmp, ignore_errors=True)
-        if rc == 0 and os.path.exists(out):
+        if rc == 0 and os.path.exists(out) and is_loadable(out, num_iter):
             return "ok" if attempt == 0 else f"ok(retry {attempt})"
         try:
             is_5001 = "5001" in open(log).read()
@@ -131,25 +187,68 @@ def run_one(args):
     d, out, log, tag = cell_paths(function, model, acf, param, n_rep, seed)
     os.makedirs(d, exist_ok=True)
     if os.path.exists(out):
-        return tag, "skip(exists)"
+        if is_loadable(out, num_iter):
+            return tag, "skip(exists)"
+        os.unlink(out)      # truncated / old-schema / wrong-budget leftover -> redo, don't skip
     if get_model(model).engine == "python":
         try:
             _run_python(function, model, acf, param, n_rep, seed, num_iter, out)
             return tag, "ok"
         except Exception as e:
+            if os.path.exists(out):
+                os.unlink(out)
             return tag, f"FAIL({type(e).__name__}: {e})"
-    return tag, _run_matlab(function, model, acf, param, n_rep, seed, num_iter, out, log)
+    status = _run_matlab(function, model, acf, param, n_rep, seed, num_iter, out, log)
+    if status.startswith("FAIL") and os.path.exists(out):
+        os.unlink(out)                          # never leave a partial cell behind
+    return tag, status
 
 
-def build_grid(functions, models, acqs, seeds, num_iter):
+def build_grid(functions, models, acqs, seeds, num_iter=None):
+    """num_iter=None -> each problem uses its own budget from PROBLEM_GRID (resources/init_doe_iter.xlsx:
+    50 for the 1-D problems, 200 for the multi-dim ones). Pass an int to override every problem."""
     grid = []
     for fn in functions:
+        ni = P.get(fn).num_iter if num_iter is None else num_iter
         for md in models:
             mi = get_model(md)
             cfgs = [(a, p) for (a, p) in acqs if a in mi.supports]      # per-model supported acqs
             for (a, p), nr, s in itertools.product(cfgs, N_REP_LIST, range(1, seeds + 1)):
-                grid.append((fn, md, a, p, nr, s, num_iter))
+                grid.append((fn, md, a, p, nr, s, ni))
     return grid
+
+
+def manifest(grid):
+    """Audit the EXPECTED grid against what is on disk. Returns (rows, counts-by-status).
+    Without this a corrupt or missing cell just vanishes from the analysis with no non-zero exit."""
+    rows = []
+    for (fn, md, a, p, nr, s, ni) in grid:
+        _d, out, _log, tag = cell_paths(fn, md, a, p, nr, s)
+        rows.append(dict(function=fn, model=md, acf=a, param=p, n_rep=nr, seed=s,
+                         status=cell_status(out, ni), num_iter=ni, path=out, tag=tag))
+    counts = {k: sum(r["status"] == k for r in rows) for k in ("ok", "missing", "stale", "corrupt")}
+    return rows, counts
+
+
+def report_manifest(grid, write_csv=True, max_list=25):
+    rows, c = manifest(grid)
+    if write_csv:
+        import pandas as pd
+        path = os.path.join(HERE, "sweep_manifest.csv")
+        pd.DataFrame(rows).to_csv(path, index=False)
+        print(f"manifest -> {path}")
+    total = len(rows)
+    print(f"\n=== GRID AUDIT: {c['ok']}/{total} ok | {c['missing']} missing | "
+          f"{c['stale']} stale | {c['corrupt']} corrupt ===")
+    bad_rows = [r for r in rows if r["status"] != "ok"]
+    for r in bad_rows[:max_list]:
+        print(f"  {r['status'].upper():8s} {r['tag']}")
+    if len(bad_rows) > max_list:
+        print(f"  ... and {len(bad_rows)-max_list} more (see sweep_manifest.csv)")
+    if bad_rows:
+        print("!! grid INCOMPLETE -- re-run run.py to fill the gaps "
+              "(missing/stale/corrupt cells are all re-run automatically)")
+    return c
 
 
 def collect():
@@ -185,10 +284,14 @@ def main():
     ap.add_argument("--models", nargs="*", default=list(MODELS))
     ap.add_argument("--acqs", nargs="*", default=[a for a, _ in acquisitions.CONFIG_ORDER])
     ap.add_argument("--seeds", type=int, default=30)
-    ap.add_argument("--num-iter", type=int, default=30)
+    ap.add_argument("--num-iter", type=int, default=None,
+                    help="override the per-problem budget (default: PROBLEM_GRID / init_doe_iter.xlsx)")
     ap.add_argument("--workers", type=int, default=8)
-    ap.add_argument("--toy", action="store_true", help="branin x all models x ei x nrep10 x seeds 1-2")
+    ap.add_argument("--toy", action="store_true",
+                    help="smoke test: the FIRST function only x all models x ei x nrep10 x seeds 1-2")
     ap.add_argument("--collect-only", action="store_true")
+    ap.add_argument("--verify", action="store_true",
+                    help="audit the grid on disk (ok/missing/corrupt) and exit; runs nothing")
     args = ap.parse_args()
 
     os.makedirs(RESULTS, exist_ok=True)
@@ -199,15 +302,28 @@ def main():
     if args.toy:
         functions = functions[:1]
         acqs_cfg = [("ei", float("nan"))]
-        grid = [(functions[0], md, "ei", float("nan"), 10, s, args.num_iter)
+        toy_iter = args.num_iter or 5                        # toy = smoke test, not the real budget
+        grid = [(functions[0], md, "ei", float("nan"), 10, s, toy_iter)
                 for md in args.models for s in (1, 2) if "ei" in get_model(md).supports]
     else:
         acqs_cfg = [(a, p) for (a, p) in acquisitions.CONFIG_ORDER if a in args.acqs]
         grid = build_grid(functions, args.models, acqs_cfg, args.seeds, args.num_iter)
 
+    if args.verify:
+        c = report_manifest(grid)
+        sys.exit(0 if c["ok"] == len(grid) else 1)
+
     needs_matlab = any(get_model(m).engine == "matlab" for m in args.models)
     print(f"{len(grid)} cells | functions {functions} | models {args.models} | "
           f"{args.workers} workers | matlab={needs_matlab}")
+
+    # Pre-generate the shared initial designs SERIALLY. Otherwise the first wave of workers all call
+    # doe_cache.ensure on the same keys at once and redundantly rebuild them.
+    from utils import doe_cache
+    keys = sorted({(fn, s, nr) for (fn, _m, _a, _p, nr, s, _i) in grid})
+    for fn, s, nr in keys:
+        doe_cache.ensure(fn, s, nr)
+    print(f"initial designs ready: {len(keys)} (function, seed, n_rep) combinations")
 
     xvfb_proc = None
     if needs_matlab:
@@ -227,6 +343,8 @@ def main():
             xvfb_proc.terminate()
     df, csv = collect()
     print(f"\ncollected {len(df)} rows -> {csv}")
+    c = report_manifest(grid)                      # never finish silently on a hole in the grid
+    sys.exit(0 if c["ok"] == len(grid) else 1)
 
 
 if __name__ == "__main__":

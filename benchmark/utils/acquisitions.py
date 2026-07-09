@@ -78,9 +78,9 @@ def evaluate(acf, mu, s, ymin, r=None, param=None):
 # ---- acquisition-config metadata (problem-independent) ----
 CONFIG_ORDER = [
     ("lcb", float("nan")), ("pi", float("nan")), ("ei", float("nan")),
-    ("haei", 0.5), ("haei", 1.0), ("haei", 5.0),
-    ("anpei", 0.2), ("anpei", 0.5), ("anpei", 0.8),
-    ("rahbo", 0.5), ("rahbo", 1.0), ("rahbo", 5.0),
+    ("haei", 0.5),          # gamma
+    ("anpei", 0.8),         # beta_anpei
+    ("rahbo", 0.5),         # alpha (beta fixed = 2)
 ]
 NOISE_BLIND = [("lcb", float("nan")), ("pi", float("nan")), ("ei", float("nan"))]
 _KNOB = {"haei": "g", "rahbo": "a", "anpei": "b"}
