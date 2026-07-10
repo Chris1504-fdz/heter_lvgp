@@ -23,6 +23,15 @@ import random
 import multiprocessing as mp
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
+# One BLAS thread per worker, for BOTH engines. Each worker is already a process, so threaded BLAS
+# only fights the other workers. MATLAB's `-singleCompThread` does NOT contain these threads: measured
+# 135% mean / 294% peak CPU per MATLAB process, i.e. 8 cells held 21.5 cores instead of ~8.
+# Pinning is FREE -- measured identical batch wall (188 s) and per-cell time (121.9 s) for
+# heter_LVGP 8-way, and identical python cell times -- while cutting the core footprint ~20%.
+# MUST be set before numpy/torch import: OpenBLAS reads the thread count at load time.
+for _v in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS"):
+    os.environ.setdefault(_v, "1")
+
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))

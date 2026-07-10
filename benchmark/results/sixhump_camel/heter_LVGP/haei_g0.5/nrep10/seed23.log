@@ -1,0 +1,175 @@
+[Warning: Unable to locate a personal folder for $documents/MATLAB.] 
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 1 completed. Current sample-mean minimum is -0.645431. New variance estimate is 0.021595.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 2 completed. Current sample-mean minimum is -0.645431. New variance estimate is 0.065833.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+[Warning: Matrix is close to singular or badly scaled. Results may be
+inaccurate. RCOND =  9.115925e-21.] 
+[> In LVGP_fit_noise (line 203)
+In bayesian_optimizer (line 57)
+In heter_driver (line 40)
+] 
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 3 completed. Current sample-mean minimum is -0.709799. New variance estimate is 0.012114.
+Iteration 4 completed. Current sample-mean minimum is -0.956111. New variance estimate is 0.011977.
+Iteration 5 completed. Current sample-mean minimum is -0.956111. New variance estimate is 0.478429.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 6 completed. Current sample-mean minimum is -0.956111. New variance estimate is 0.043059.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 7 completed. Current sample-mean minimum is -0.956512. New variance estimate is 0.012154.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 8 completed. Current sample-mean minimum is -0.956512. New variance estimate is 0.076549.
+Iteration 9 completed. Current sample-mean minimum is -0.956512. New variance estimate is 0.019586.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 10 completed. Current sample-mean minimum is -0.956512. New variance estimate is 0.023049.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 11 completed. Current sample-mean minimum is -0.956512. New variance estimate is 0.076549.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 12 completed. Current sample-mean minimum is -0.956512. New variance estimate is 0.025976.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 13 completed. Current sample-mean minimum is -0.956512. New variance estimate is 0.162070.
+Iteration 14 completed. Current sample-mean minimum is -1.017403. New variance estimate is 0.011989.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 15 completed. Current sample-mean minimum is -1.017403. New variance estimate is 0.266895.
+Iteration 16 completed. Current sample-mean minimum is -1.017403. New variance estimate is 0.138882.
+Iteration 17 completed. Current sample-mean minimum is -1.017403. New variance estimate is 0.018889.
+Iteration 18 completed. Current sample-mean minimum is -1.017403. New variance estimate is 0.478427.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 19 completed. Current sample-mean minimum is -1.017403. New variance estimate is 0.028275.
+Iteration 20 completed. Current sample-mean minimum is -1.017403. New variance estimate is 0.065683.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 21 completed. Current sample-mean minimum is -1.017403. New variance estimate is 0.013496.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 22 completed. Current sample-mean minimum is -1.017403. New variance estimate is 0.028292.
+Iteration 23 completed. Current sample-mean minimum is -1.017403. New variance estimate is 0.139715.
+Iteration 24 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.012004.
+Iteration 25 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.012092.
+Iteration 26 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.011983.
+Iteration 27 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.355035.
+Iteration 28 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.011984.
+Iteration 29 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.011985.
+Iteration 30 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.012107.
+Iteration 31 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.021333.
+Iteration 32 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.011981.
+Iteration 33 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.013753.
+Iteration 34 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.296966.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 35 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.029655.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 36 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.174052.
+Iteration 37 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.033201.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 38 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.011986.
+Iteration 39 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.012109.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 40 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.011984.
+Iteration 41 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.011985.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 42 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.011987.
+Iteration 43 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.012101.
+Iteration 44 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.011986.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 45 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.205147.
+Iteration 46 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.011989.
+Iteration 47 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.012068.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 48 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.011986.
+Iteration 49 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.156855.
+Iteration 50 completed. Current sample-mean minimum is -1.019081. New variance estimate is 0.011986.
+DONE sixhump_camel heter_LVGP acf=haei param=0.5 n_rep=10 seed=23 final=-1.01908 274.0s
