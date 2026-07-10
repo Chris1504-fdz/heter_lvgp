@@ -1,0 +1,619 @@
+[Warning: Unable to locate a personal folder for $documents/MATLAB.] 
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+[Warning: Matrix is close to singular or badly scaled. Results may be
+inaccurate. RCOND =  1.211895e-18.] 
+[> In LVGP_fit_noise (line 203)
+In bayesian_optimizer (line 57)
+In heter_driver (line 40)
+] 
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 1 completed. Current sample-mean minimum is 3.121406. New variance estimate is 0.181863.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 2 completed. Current sample-mean minimum is 3.121406. New variance estimate is 2.259243.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 3 completed. Current sample-mean minimum is 0.078107. New variance estimate is 0.045460.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 4 completed. Current sample-mean minimum is 0.078107. New variance estimate is 0.045487.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 5 completed. Current sample-mean minimum is 0.078107. New variance estimate is 0.048532.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 6 completed. Current sample-mean minimum is 0.078107. New variance estimate is 0.046858.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 7 completed. Current sample-mean minimum is 0.078107. New variance estimate is 0.251027.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 8 completed. Current sample-mean minimum is 0.078107. New variance estimate is 0.045462.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 9 completed. Current sample-mean minimum is 0.078107. New variance estimate is 1.004042.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 10 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.045456.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 11 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.045457.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 12 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.843251.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 13 completed. Current sample-mean minimum is 0.040857. New variance estimate is 1.885550.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 14 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.087093.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 15 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.081619.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 16 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.483496.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 17 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.528648.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 18 completed. Current sample-mean minimum is 0.040857. New variance estimate is 1.338686.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 19 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.224113.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 20 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.194236.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 21 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.308151.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 22 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.062603.
+Iteration 23 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.615454.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 24 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.060093.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 25 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.192470.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 26 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.662420.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 27 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.564811.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 28 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.110281.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 29 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.107406.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 30 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.054884.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 31 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.103512.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 32 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.053177.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 33 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.376576.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 34 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.251027.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 35 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.045499.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 36 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.419515.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 37 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.644695.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 38 completed. Current sample-mean minimum is 0.040857. New variance estimate is 2.259245.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 39 completed. Current sample-mean minimum is 0.040857. New variance estimate is 1.312283.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 40 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.176640.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 41 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.045496.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 42 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.045464.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 43 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.211596.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 44 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.045462.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 45 completed. Current sample-mean minimum is 0.040857. New variance estimate is 1.700331.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 46 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.045461.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Solver stopped prematurely.
+
+fmincon stopped because it exceeded the iteration limit,
+options.MaxIterations = 1.000000e+02.
+
+Iteration 47 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.045460.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 48 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.693278.
+Iteration 49 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.045460.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+Iteration 50 completed. Current sample-mean minimum is 0.040857. New variance estimate is 0.045459.
+DONE ackley_2d heter_LVGP acf=anpei param=0.8 n_rep=3 seed=23 final=0.040857 415.3s
