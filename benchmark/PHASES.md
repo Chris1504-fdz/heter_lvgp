@@ -18,7 +18,7 @@ Budgets source:   `resources/init_doe_iter.xlsx` (rounded → `doe.PROBLEM_GRID`
 
 ---
 
-## ▶ PHASE 2a — generalize the framework to *d* continuous dimensions  ◀ CURRENT
+## ✅ PHASE 2a — generalize the framework to *d* continuous dimensions — COMPLETE
 
 The blocker. The equations are *not* the hard part: every layer currently assumes exactly
 **1 continuous dim + 1 categorical** (`X = [x1, level]`, 2 columns).
@@ -43,21 +43,33 @@ Run `python regress_1d.py` after every step (add `--matlab` for the 2 LVGP cells
 - [x] `utils/problems.py` — `ProblemSpec`: vector `bounds` + `.d`; `f(X,level)`/`sigma(X,level)` take
       (n,d) for d>1, bare (n,) x1 for d==1 (existing 1-D f untouched). **Regression bit-exact (6/6).**
       _(still TODO in this file: `initial_doe` → `make_doe_nd` — that's Step 3.)_
-- [ ] `utils/doe_cache.py` — `X_sample` becomes (n, d+1) = `[x1..xd, level]` (already (n,2) at d=1).
-- [ ] `utils/problems.py::initial_doe` → `make_doe_nd` (loop over d continuous cols).
-- [ ] `utils/bo.py` — per-level data holds `X` (n,d); `_minimize_1d` → `_minimize_nd`
-      (grid/Sobol + multi-start L-BFGS; must reduce exactly at d=1).
-- [ ] `utils/models/base.py` — aleatoric poly: degree-2 in *d* vars **with cross terms**
-      (match MATLAB `build_poly_features`); reduces to `[1,w,w²]` at d=1.
-- [ ] `utils/models/{separate_gp,categorical_kernel}.py` — accept (n, d) inputs.
-- [ ] `matlab/{heter,standard}_driver.m` — `ind_qual = d+1`, `X_range_continuous` is (2, d),
-      objective handle over `X(:,1:d)`.
-- [ ] `utils/results.py` — de-hardcode `reshape(-1, 2)` → (n, d+1); `f_true_level(x[:-1], level)`.
-- [ ] **REGRESSION**: full `regress_1d.py --matlab` bit-exact after all steps.
+- [x] `utils/problems.py::initial_doe` → `make_doe_nd`; `X_sample` (n, d+1). **Bit-exact vs every
+      sampled stored doe_cache file**; d>1 smoke (13 pts = 4+4+5 remainder rule) OK. `doe_cache` needed
+      no change (stores whatever width initial_doe emits).
+- [x] `utils/bo.py` — per-level data holds `X` (n,d); `_minimize_box`: **d==1 = the verbatim legacy
+      grid+polish (bit-exact); d>1 = deterministic unscrambled-Sobol (2^⌈log2 max(256,128d)⌉ cands) +
+      L-BFGS-B polish from top max(3,d)**. Deliberately NOT botorch optimize_acqf: the acquisitions
+      (incl. haei/anpei/rahbo + the aleatoric poly) are closed-form numpy; wrapping them in torch would
+      fork the acquisition definitions between 1-D and d-dim. Same architecture, scaled.
+- [x] `utils/models/base.py` — aleatoric poly d-dim: per-column powers [1, W, W²], **NO cross terms —
+      verified against BOTH MATLAB builders** (build_poly_features + _local are pure per-col powers).
+- [x] `utils/models/{separate_gp,categorical_kernel}.py` — (n, d) inputs; cat_dims=[d],
+      Normalize(d+1, indices=0..d-1). **Regression bit-exact 6/6 + 3-D end-to-end smoke PASS**
+      (both models find the true optimum of a synthetic 3-D×3-level problem; rahbo works).
+- [x] `matlab/{heter,standard}_driver.m` — `nd = numel(lb)`, `ind_qual = nd+1`, objective over
+      `X(:,1:nd)`, `x_next(1:end-1)` / `x_next(end)`; v2 true-f columns generalized. Vendored
+      find_next was already d-general (`d = size(X_sample,2)`, row-vector lb/ub).
+- [x] `utils/results.py` — loader keeps stored width (n, d+1); level = LAST column everywhere.
+      All 5040 stored runs still load; tables unchanged.
+- [x] **REGRESSION: full `regress_1d.py --matlab` = PASS 8 | FAIL 0 at tol=0** — all 6 python cells
+      AND both MATLAB cells (heter_LVGP + standard_LVGP, real 50-iter runs) reproduce the stored
+      results bit-for-bit through the complete d-dim refactor. d>1 additionally validated by a 3-D
+      python end-to-end smoke + a run-twice determinism proof (|Δ|=0). d>1 MATLAB smoke lands with
+      the first real multi-dim equation (Phase 2c vehicle = rastrigin_6d).
 
 ---
 
-## PHASE 2b — cost probe  (BEFORE committing to any multi-dim sweep)
+## ▶ PHASE 2b — cost probe  (BEFORE committing to any multi-dim sweep)  ◀ CURRENT
 
 A crude O(n³) projection from the *measured* 475 s/cell (branin, heter_LVGP, 50 iters, n_tr 10→60):
 

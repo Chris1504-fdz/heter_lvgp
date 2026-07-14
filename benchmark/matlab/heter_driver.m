@@ -12,9 +12,10 @@ function heter_driver(func_name, acf, acf_param, n_rep, seed, num_iter, out_file
     rng(seed);
 
     [f, sig, lb, ub, n_lv] = problems(func_name);
-    ind_qual = 2; X_range_continuous = [lb; ub];   % DOE (incl. its size) comes from doe_file
-    var_fctr = 1:n_lv;                               % identity -> objfunc gets [x1, level]
-    obj_noisy = @(X) f(X(:,1), X(:,2)) + randn(size(X,1),1) .* sig(X(:,1), X(:,2));
+    nd = numel(lb);                                  % # continuous dims (lb/ub are 1 x nd rows)
+    ind_qual = nd + 1; X_range_continuous = [lb; ub];% DOE (incl. its size) comes from doe_file
+    var_fctr = 1:n_lv;                               % identity -> objfunc gets [x_1..x_nd, level]
+    obj_noisy = @(X) f(X(:,1:nd), X(:,nd+1)) + randn(size(X,1),1) .* sig(X(:,1:nd), X(:,nd+1));
 
     % ---- initial DOE: SHARED design generated in Python (utils/doe_cache.py) -- common random numbers,
     %      byte-identical for every model. Loads X_sample, Y_sample, Var_sample, Y_rep. ----
@@ -66,8 +67,8 @@ function heter_driver(func_name, acf, acf_param, n_rep, seed, num_iter, out_file
 
     % noise-free objective + true noise std at every sampled point: keeps the cell re-scorable even
     % if problems.m is later edited.
-    f_true_sampled     = reshape(f(X_sampled(:,1),   X_sampled(:,2)), 1, []);
-    sigma_true_sampled = reshape(sig(X_sampled(:,1), X_sampled(:,2)), 1, []);
+    f_true_sampled     = reshape(f(X_sampled(:,1:nd),   X_sampled(:,nd+1)), 1, []);
+    sigma_true_sampled = reshape(sig(X_sampled(:,1:nd), X_sampled(:,nd+1)), 1, []);
 
     % Curated fitted hyperparameters -- deliberately NOT result.final_model, whose fit_detail embeds
     % R and Linv (n_tr x n_tr => ~3.6 GB over the Phase-2 grid) and which are recomputable from these.

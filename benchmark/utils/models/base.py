@@ -19,29 +19,42 @@ POLY_DEGREE = 2
 POLY_LAMBDA = 1e-3
 
 
-def _phi(wn, degree):
-    wn = np.asarray(wn, float).reshape(-1, 1)
-    return np.hstack([wn ** d for d in range(degree + 1)])
+def _phi(Wn, degree):
+    """Polynomial features over standardized columns: [1, W, W^2, ..., W^degree] -- per-COLUMN powers,
+    NO cross terms, exactly mirroring the MATLAB build_poly_features (acquisition_func.m /
+    bayesian_optimizer.m). Wn is (n, d); at d=1 this reduces to [1, w, w^2] bit-exactly."""
+    Wn = np.asarray(Wn, float)
+    if Wn.ndim == 1:
+        Wn = Wn.reshape(-1, 1)
+    cols = [np.ones((Wn.shape[0], 1))]
+    for deg in range(1, degree + 1):
+        cols.append(Wn ** deg)
+    return np.hstack(cols)
+
+
+def _as_2d(X):
+    X = np.asarray(X, float)
+    return X.reshape(-1, 1) if X.ndim == 1 else X
 
 
 class CategoryAleatoric:
-    """Degree-2 ridge log-variance model r(x) for ONE category, in x1 alone."""
+    """Degree-2 ridge log-variance model r(x) for ONE category, over the d continuous dims."""
 
-    def __init__(self, x1, y_var, degree=POLY_DEGREE, lam=POLY_LAMBDA):
-        x1 = np.asarray(x1, float).ravel()
+    def __init__(self, X, y_var, degree=POLY_DEGREE, lam=POLY_LAMBDA):
+        X = _as_2d(X)
         self.degree = degree
-        self.mu = x1.mean()
-        sd = x1.std(ddof=1) if x1.size > 1 else 0.0
-        self.sd = sd if sd > 0 else 1.0
-        wn = (x1 - self.mu) / self.sd
-        Phi = _phi(wn, degree)
+        self.mu = X.mean(axis=0)
+        sd = X.std(axis=0, ddof=1) if X.shape[0] > 1 else np.zeros(X.shape[1])
+        self.sd = np.where(sd > 0, sd, 1.0)
+        Wn = (X - self.mu) / self.sd
+        Phi = _phi(Wn, degree)
         log_sigma = 0.5 * np.log(np.maximum(np.asarray(y_var, float).ravel(), 1e-12))
         A = Phi.T @ Phi + lam * np.eye(Phi.shape[1])
         self.theta = np.linalg.solve(A, Phi.T @ log_sigma)
 
     def predict(self, x_new):
-        wn = (np.asarray(x_new, float).ravel() - self.mu) / self.sd
-        log_sigma = _phi(wn, self.degree) @ self.theta
+        Wn = (_as_2d(x_new) - self.mu) / self.sd
+        log_sigma = _phi(Wn, self.degree) @ self.theta
         return np.maximum(np.exp(2 * log_sigma), 1e-12)
 
 
@@ -53,7 +66,7 @@ class AleatoricModels:
 
     @classmethod
     def fit(cls, data_by_level, degree=POLY_DEGREE, lam=POLY_LAMBDA):
-        return cls({lv: CategoryAleatoric(d["x1"], d["y_var"], degree, lam)
+        return cls({lv: CategoryAleatoric(d["X"], d["y_var"], degree, lam)
                     for lv, d in data_by_level.items()})
 
     def r(self, level, x_new):

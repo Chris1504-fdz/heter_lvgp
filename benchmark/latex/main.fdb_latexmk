@@ -1,6 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1783719815.4991 "/data/zhq7531/IDEAL/hetero_lvgp/benchmark/latex/main.tex" "main.pdf" "main" 1783719815.6953 0
-  "/data/zhq7531/IDEAL/hetero_lvgp/benchmark/latex/main.tex" 1783719128.35062 723 336283b6ca061106ee8fda94794849cd ""
+["pdflatex"] 1784064359.91097 "/data/zhq7531/IDEAL/hetero_lvgp/benchmark/latex/main.tex" "main.pdf" "main" 1784064360.56724 0
+  "/data/zhq7531/IDEAL/hetero_lvgp/benchmark/latex/main.tex" 1784063218.17681 789 6069f6ade90d696955fd992dcdeb857f ""
   "/home/zhq7531/.TinyTeX/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm" 1246382020 1120 1e8878807317373affa7f7bba4cf2f6a ""
   "/home/zhq7531/.TinyTeX/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy7.tfm" 1246382020 1120 7f9f170e8aa57527ad6c49feafd45d54 ""
   "/home/zhq7531/.TinyTeX/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
@@ -60,12 +60,14 @@
   "/home/zhq7531/.TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1779770031 92919 301c388eedcd10ac9a90bfa0e39394eb ""
   "/home/zhq7531/.TinyTeX/texmf-var/web2c/pdftex/pdflatex.fmt" 1779770050 2245689 71280c66175233abdd91fd1266b7bdff ""
   "/home/zhq7531/.TinyTeX/texmf.cnf" 1779770020 637 edd806fb06a89761a6034e1968af9017 ""
-  "main.aux" 1783719815.66527 1198 02161248f9fcd2ffad69366a4ac3cc55 "pdflatex"
-  "main.tex" 1783719128.35062 723 336283b6ca061106ee8fda94794849cd ""
-  "noise_nrep03.tex" 1783719128.18662 3402 b7d3759672159652c282fbd8ba4fc77d ""
-  "noise_nrep10.tex" 1783719128.35062 3388 9c07977602e053661a5a904621c7e886 ""
-  "regret_nrep03.tex" 1783719814.53327 3150 b644908b23b815ca95c4b5a9c6ff4a4a ""
-  "regret_nrep10.tex" 1783719815.56927 3158 d88fc1734e3b079c1ed86526a62c4289 ""
+  "main.aux" 1784064360.43901 1885 f9956e091cd840c6c9fe30dde150d60c "pdflatex"
+  "main.tex" 1784063218.17681 789 6069f6ade90d696955fd992dcdeb857f ""
+  "mv_nrep03.tex" 1784063217.75681 3169 bb89fe94ef93f807d4d086a287767471 ""
+  "mv_nrep10.tex" 1784063218.17681 3167 1a2c39ab13910779e89eedc1a70cb534 ""
+  "noise_nrep03.tex" 1784063216.66882 3402 b7d3759672159652c282fbd8ba4fc77d ""
+  "noise_nrep10.tex" 1784063217.36882 3388 9c07977602e053661a5a904621c7e886 ""
+  "regret_nrep03.tex" 1784064358.75902 3150 b644908b23b815ca95c4b5a9c6ff4a4a ""
+  "regret_nrep10.tex" 1784063216.00482 3158 d88fc1734e3b079c1ed86526a62c4289 ""
   (generated)
   "main.aux"
   "main.log"

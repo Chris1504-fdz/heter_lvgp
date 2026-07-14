@@ -109,7 +109,7 @@ for i = 1:num_iter
         n_points, custom_points, X_sampled, y_sampled, y_var_sampled, bo_options);
 
     % Evaluate the selected location with n_rep stochastic replicates.
-    x_next_eval = [x_next(1), var_fctr(int32(x_next(2)))];
+    x_next_eval = [x_next(1:end-1), var_fctr(int32(x_next(end)))];
     y_rep_next = objfunc(repmat(x_next_eval, bo_options.n_rep, 1));
     y_next = mean(y_rep_next);
     y_var_next = var(y_rep_next, 0, 1);

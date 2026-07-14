@@ -18,12 +18,17 @@ from .base import BaseModel, AleatoricModels
 DTYPE = torch.float64
 
 
+def _as_2d(a):
+    a = np.asarray(a, float)
+    return a.reshape(-1, 1) if a.ndim == 1 else a
+
+
 def _stack(data_by_level):
     Xs, Ys, Yvs = [], [], []
     for lv, d in data_by_level.items():
-        x1 = np.asarray(d["x1"], float).reshape(-1, 1)
-        code = np.full_like(x1, float(int(lv) - 1))
-        Xs.append(np.hstack([x1, code]))
+        Xc = _as_2d(d["X"])                                # (n, d) continuous block
+        code = np.full((Xc.shape[0], 1), float(int(lv) - 1))
+        Xs.append(np.hstack([Xc, code]))
         Ys.append(np.asarray(d["y_mean"], float).reshape(-1, 1))
         Yvs.append(np.asarray(d["y_var"], float).reshape(-1, 1))
     X = torch.tensor(np.vstack(Xs), dtype=DTYPE)
@@ -34,8 +39,9 @@ def _stack(data_by_level):
 
 def _fit_mixed_gp(data_by_level):
     X, Y, Yv = _stack(data_by_level)
-    model = MixedSingleTaskGP(train_X=X, train_Y=Y, train_Yvar=Yv, cat_dims=[1],
-                              input_transform=Normalize(d=2, indices=[0]),
+    d = X.shape[1] - 1                                     # continuous dims (last col = category code)
+    model = MixedSingleTaskGP(train_X=X, train_Y=Y, train_Yvar=Yv, cat_dims=[d],
+                              input_transform=Normalize(d=d + 1, indices=list(range(d))),
                               outcome_transform=Standardize(m=1))
     fit_gpytorch_mll(ExactMarginalLogLikelihood(model.likelihood, model))
     model.eval()
@@ -58,8 +64,8 @@ class CategoricalKernelGP(BaseModel):
         return cls(model, sorted(int(lv) for lv in data_by_level), ale)
 
     def predict(self, level, x_new, observation_noise=False):
-        x = np.asarray(x_new, float).reshape(-1, 1)
-        code = np.full_like(x, float(int(level) - 1))
+        x = _as_2d(x_new)
+        code = np.full((x.shape[0], 1), float(int(level) - 1))
         X = torch.tensor(np.hstack([x, code]), dtype=DTYPE)
         with torch.no_grad():
             post = self.model.posterior(X, observation_noise=observation_noise)

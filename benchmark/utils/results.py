@@ -56,9 +56,9 @@ def _load_cell(path):
         seed=int(float(meta.get("seed"))), runtime=float(meta.get("runtime", 0.0)),
         schema_version=int(float(meta.get("schema_version", 1))),
         Y_min_history=np.ravel(g("Y_min_history")).astype(float),
-        X_sampled=g("X_sampled").astype(float).reshape(-1, 2),
+        X_sampled=np.atleast_2d(g("X_sampled").astype(float)),      # (n, d+1), level = LAST col
         Y_sampled=np.ravel(g("Y_sampled")).astype(float),      # replicate MEAN at each sampled point
-        X_min_est=g("X_min_est").astype(float).reshape(-1, 2),
+        X_min_est=np.atleast_2d(g("X_min_est").astype(float)),
         Y_var_sampled=np.ravel(g("Y_var_sampled")).astype(float),
         n_initial=int(np.ravel(g("n_initial"))[0]),
     )
@@ -110,7 +110,7 @@ class GridResults:
 def _true_best_traj(run, spec):
     """Per-iteration true_best_sampled = cumulative min f_true over sampled points."""
     X = run["X_sampled"]
-    ft = np.array([float(spec.f_true_level(x[0], int(round(x[1])))) for x in X])
+    ft = np.array([float(np.ravel(spec.f_true_level(x[:-1], int(round(x[-1])))) [0]) for x in X])
     cummin = np.minimum.accumulate(ft)
     n0 = run["n_initial"]
     niter = len(run["Y_min_history"])
@@ -219,7 +219,7 @@ def _incumbent_idx(run, spec, ground_truth):
     if ground_truth:
         vals = run["f_true_sampled"]
         if vals is None:                                   # v1 cell -> recompute from the spec
-            vals = np.array([float(spec.f_true_level(x[0], int(round(x[1])))) for x in X])
+            vals = np.array([float(np.ravel(spec.f_true_level(x[:-1], int(round(x[-1]))))[0]) for x in X])
     else:
         vals = run["Y_sampled"]
     argmins = np.empty(len(vals), int)                     # running argmin (no float-equality tricks)
@@ -239,7 +239,7 @@ def sigma2_at_best_traj(run, spec, ground_truth=True):
         sig = run["sigma_true_sampled"]
         if sig is None:
             X = run["X_sampled"]
-            sig = np.array([float(spec.sigma_level(x[0], int(round(x[1])))) for x in X])
+            sig = np.array([float(np.ravel(spec.sigma_level(x[:-1], int(round(x[-1]))))[0]) for x in X])
         return sig[idx] ** 2
     return run["Y_var_sampled"][idx]
 
@@ -654,7 +654,7 @@ def sampling_trajectory(grid, function, acf="ei", param=float("nan"), n_rep=10, 
                     color="crimson"); ax.set_title(_mlabel(m), fontsize=9); continue
         X = run["X_sampled"]; n0 = run["n_initial"]
         it = np.arange(len(X)) - n0 + 1                       # <=0 initial DOE, >0 BO iterations
-        cols = [plt.cm.tab10((int(l) - 1) % 10) for l in X[:, 1]]
+        cols = [plt.cm.tab10((int(l) - 1) % 10) for l in X[:, -1]]
         ax.scatter(it, X[:, 0], c=cols, s=20, edgecolor="k", lw=0.2, zorder=3)
         ax.axhline(x_opt, color="crimson", ls="--", lw=1, zorder=2)
         ax.axvline(0.5, color="grey", ls=":", lw=1, zorder=2)
@@ -1090,8 +1090,8 @@ def _mv_sampled(run, spec, alpha):
     f = run.get("f_true_sampled"); sig = run.get("sigma_true_sampled")
     if f is None or sig is None:
         X = run["X_sampled"]
-        f = np.array([spec.f_true_level(x[0], int(round(x[1]))) for x in X])
-        sig = np.array([spec.sigma_level(x[0], int(round(x[1]))) for x in X])
+        f = np.array([float(np.ravel(spec.f_true_level(x[:-1], int(round(x[-1]))))[0]) for x in X])
+        sig = np.array([float(np.ravel(spec.sigma_level(x[:-1], int(round(x[-1]))))[0]) for x in X])
     return np.asarray(f, float) + alpha * np.asarray(sig, float) ** 2
 
 
@@ -1555,3 +1555,65 @@ def head_to_head(grid, function, configs, metric="mv", n_rep=10, ground_truth=Tr
         "—" if k == best else f"{stats.mannwhitneyu(vals[k], vals[best], alternative='greater').pvalue:.1e}"
         for k in df.index]
     return df.round(6)
+
+
+def mv_alpha_sweep(grid, alphas=(1, 5, 15), n_rep=10, functions=None):
+    """Sensitivity of the robustness verdict to the risk-aversion alpha in MV = f + alpha*sigma^2.
+    For each alpha: the TRUE robust optimum (level, x1) per problem, the best (model x acq) config by
+    mean MV-regret, and the acquisition mean-rank over the full-support models. The 'which problems
+    test robustness' answer is alpha-dependent: griewank_2d's best level flips 1->2 above
+    alpha ~ 12.9 and branin's flips 2->4 above ~ 7.3 (see the per-level tension table)."""
+    import pandas as pd
+    global MV_ALPHA
+    fns = functions or grid.functions()
+    full = [m for m in _ordered_models(grid)
+            if set(a for a, _ in acquisitions.CONFIG_ORDER) <= set(MODELS[m].supports)]
+    keep = MV_ALPHA
+    rows, rank_rows = [], []
+    try:
+        for alpha in alphas:
+            MV_ALPHA = float(alpha)
+            ranks = {acquisitions.label(a, p): [] for a, p in acquisitions.CONFIG_ORDER}
+            for fn in fns:
+                spec = P.get(fn); fstar = P.ground_truth_min(spec)
+                x = np.linspace(spec.lb, spec.ub, 6001); best_star = (np.inf, None, None)
+                for lv in spec.levels:
+                    mv = spec.f_true_level(x, lv) + alpha * spec.sigma_level(x, lv) ** 2
+                    i = int(mv.argmin())
+                    if mv[i] < best_star[0]:
+                        best_star = (float(mv[i]), lv, float(x[i]))
+                best = (np.inf, "")
+                for m in _ordered_models(grid):
+                    for a, p in acquisitions.CONFIG_ORDER:
+                        if a not in MODELS[m].supports:
+                            continue
+                        runs = grid.select(function=fn, model=m, acf=a, param=p, n_rep=n_rep)
+                        if not runs:
+                            continue
+                        v = np.mean([_final_metric(r, spec, fstar, "mv", True) for r in runs])
+                        if v < best[0]:
+                            best = (v, f"{_mlabel(m)} + {acquisitions.label(a, p)}")
+                        if m in full:
+                            ranks.setdefault(acquisitions.label(a, p), [])
+                rows.append(dict(alpha=alpha, problem=fn, mv_star_level=best_star[1],
+                                 mv_star_x1=round(best_star[2], 3),
+                                 best_config=best[1], best_mv_regret=round(best[0], 4)))
+                for m in full:
+                    vals = {}
+                    for a, p in acquisitions.CONFIG_ORDER:
+                        runs = grid.select(function=fn, model=m, acf=a, param=p, n_rep=n_rep)
+                        if runs:
+                            vals[(a, p)] = np.mean([_final_metric(r, spec, fstar, "mv", True)
+                                                    for r in runs])
+                    for rk, (a, p) in enumerate(sorted(vals, key=lambda c: vals[c]), 1):
+                        ranks[acquisitions.label(a, p)].append(rk)
+            for lab, rr in ranks.items():
+                if rr:
+                    rank_rows.append(dict(alpha=alpha, acquisition=lab,
+                                          mean_rank=round(float(np.mean(rr)), 2)))
+    finally:
+        MV_ALPHA = keep
+    per_problem = pd.DataFrame(rows).set_index(["alpha", "problem"])
+    acq_ranks = (pd.DataFrame(rank_rows).pivot(index="acquisition", columns="alpha",
+                                               values="mean_rank"))
+    return per_problem, acq_ranks

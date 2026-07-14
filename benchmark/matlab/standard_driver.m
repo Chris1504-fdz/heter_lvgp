@@ -13,9 +13,10 @@ function standard_driver(func_name, acf, acf_param, n_rep, seed, num_iter, out_f
     rng(seed);
 
     [f, sig, lb, ub, n_lv] = problems(func_name);
-    ind_qual = 2; X_range_continuous = [lb; ub];   % DOE (incl. its size) comes from doe_file
+    nd = numel(lb);                                  % # continuous dims (lb/ub are 1 x nd rows)
+    ind_qual = nd + 1; X_range_continuous = [lb; ub];% DOE (incl. its size) comes from doe_file
     var_fctr = 1:n_lv;
-    obj_noisy = @(X) f(X(:,1), X(:,2)) + randn(size(X,1),1) .* sig(X(:,1), X(:,2));
+    obj_noisy = @(X) f(X(:,1:nd), X(:,nd+1)) + randn(size(X,1),1) .* sig(X(:,1:nd), X(:,nd+1));
 
     % ---- initial DOE: SHARED design generated in Python (utils/doe_cache.py) -- common random numbers,
     %      byte-identical for every model. The plain LVGP uses only the replicate MEAN. ----
@@ -29,7 +30,7 @@ function standard_driver(func_name, acf, acf_param, n_rep, seed, num_iter, out_f
     X_sampled = X_sample; Y_sampled = Y_sample; Yvar_sampled = Var_sample;
     y_min = min(Y_sampled);
     Y_min_history = zeros(1,num_iter); Y_min_est = zeros(1,num_iter);
-    X_min_est = zeros(num_iter,2); X_next_history = zeros(num_iter,2);
+    X_min_est = zeros(num_iter,nd+1); X_next_history = zeros(num_iter,nd+1);
     Y_next_history = zeros(1,num_iter); Y_var_next_history = zeros(1,num_iter);
     acf_val = zeros(1,num_iter);
     mu_at_est = zeros(1,num_iter); s_at_est = zeros(1,num_iter);
@@ -41,7 +42,7 @@ function standard_driver(func_name, acf, acf_param, n_rep, seed, num_iter, out_f
         model = LVGP_fit(X_sampled, Y_sampled, model_options);        % MEAN only (homoscedastic)
         [x_next, U_min_est, x_min_est, y_min_est] = find_next(model, X_range_continuous, ...
             acf, n_points, custom_points, X_sampled, Y_sampled);
-        x_eval = [x_next(1), var_fctr(int32(x_next(2)))];             % = [x1, level] (identity)
+        x_eval = [x_next(1:end-1), var_fctr(int32(x_next(end)))];     % = [x_1..x_nd, level] (identity)
         y_rep  = obj_noisy(repmat(x_eval, n_rep, 1));
         y_mean = mean(y_rep); y_var = var(y_rep,0,1);
         X_sampled = [X_sampled; x_next]; Y_sampled = [Y_sampled; y_mean]; Yvar_sampled = [Yvar_sampled; y_var];
@@ -66,8 +67,8 @@ function standard_driver(func_name, acf, acf_param, n_rep, seed, num_iter, out_f
 
     % ---- SCHEMA v2 ----
     X_init = X_sample; Y_init = D.Y_sample(:)'; Y_rep_init = D.Y_rep;
-    f_true_sampled     = reshape(f(X_sampled(:,1),   X_sampled(:,2)), 1, []);
-    sigma_true_sampled = reshape(sig(X_sampled(:,1), X_sampled(:,2)), 1, []);
+    f_true_sampled     = reshape(f(X_sampled(:,1:nd),   X_sampled(:,nd+1)), 1, []);
+    sigma_true_sampled = reshape(sig(X_sampled(:,1:nd), X_sampled(:,nd+1)), 1, []);
 
     % curated hyperparameters. The plain LVGP is homoscedastic -> no aleatoric polynomial exists.
     hyper = struct();

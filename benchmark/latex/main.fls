@@ -95,6 +95,12 @@ INPUT noise_nrep03.tex
 INPUT ./noise_nrep10.tex
 INPUT ./noise_nrep10.tex
 INPUT noise_nrep10.tex
+INPUT ./mv_nrep03.tex
+INPUT ./mv_nrep03.tex
+INPUT mv_nrep03.tex
+INPUT ./mv_nrep10.tex
+INPUT ./mv_nrep10.tex
+INPUT mv_nrep10.tex
 INPUT main.aux
 INPUT /home/zhq7531/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbsy10.pfb
 INPUT /home/zhq7531/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmbsy7.pfb
