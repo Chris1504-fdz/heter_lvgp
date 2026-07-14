@@ -207,10 +207,11 @@ def defined_problems():
 # ======================================================================================
 #  spec-driven simulation / DOE / ground truth (generic over any ProblemSpec)
 # ======================================================================================
-def noisy_eval(spec, x1, level, n_rep, rng):
-    """n_rep noisy replicates of the objective at (x1, level): f + N(0, sigma^2)."""
-    f = float(spec.f_true_level(x1, level))
-    s = float(spec.sigma_level(x1, level))
+def noisy_eval(spec, x, level, n_rep, rng):
+    """n_rep noisy replicates of the objective at (x, level): f + N(0, sigma^2).
+    `x` is a scalar (d=1) or a length-d vector -- one design point."""
+    f = float(np.ravel(spec.f_true_level(x, level))[0])
+    s = float(np.ravel(spec.sigma_level(x, level))[0])
     return f + rng.standard_normal(n_rep) * s
 
 
@@ -233,19 +234,22 @@ def initial_doe(spec, n_rep, seed=None, rng=None, mode=DOE_MODE, n_init=None):
     not a multiple of n_levels, `n_init % n_levels` levels get one extra point.
     Each design point is evaluated n_rep times (heteroscedastic replicates). Both engines consume this
     via utils/doe_cache.py, so the MATLAB drivers cannot drift from it.
-    Returns: X_sample (n_tr,2)[x1,level], Y_sample (replicate mean), Var_sample (replicate var),
-    Y_rep (n_tr,n_rep), doe {level: sorted x1 array}."""
+    Returns: X_sample (n_tr, d+1) = [x_1..x_d, level], Y_sample (replicate mean), Var_sample
+    (replicate var), Y_rep (n_tr,n_rep), doe {level: (m, d) array}.
+    d == 1 is BIT-EXACT with the pre-d-dim code: make_doe_nd consumes identical rng there (the dim
+    shuffle is skipped), so every design location and noise draw is unchanged."""
     if rng is None:
         rng = np.random.default_rng(seed)
     n_tr = int(spec.n_init if n_init is None else n_init)
-    doe = _doe.make_doe(mode, rng, spec.lb, spec.ub, spec.n_levels, n_init=n_tr)
-    X_sample = np.zeros((n_tr, 2)); Y_sample = np.zeros(n_tr)
+    d = spec.d
+    doe = _doe.make_doe_nd(mode, rng, spec.bounds, spec.n_levels, n_init=n_tr)
+    X_sample = np.zeros((n_tr, d + 1)); Y_sample = np.zeros(n_tr)
     Var_sample = np.zeros(n_tr); Y_rep = np.zeros((n_tr, n_rep))
     row = 0
     for i in range(1, spec.n_levels + 1):
-        for xj in doe[i]:                               # this level's SLHD x1 locations
-            y_rep = noisy_eval(spec, xj, i, n_rep, rng)
-            X_sample[row] = [xj, i]
+        for xrow in doe[i]:                             # this level's design points, each (d,)
+            y_rep = noisy_eval(spec, xrow, i, n_rep, rng)
+            X_sample[row, :d] = xrow; X_sample[row, d] = i
             Y_sample[row] = y_rep.mean()
             Var_sample[row] = y_rep.var(ddof=1)
             Y_rep[row] = y_rep
@@ -254,12 +258,21 @@ def initial_doe(spec, n_rep, seed=None, rng=None, mode=DOE_MODE, n_init=None):
                 Y_rep=Y_rep, doe=doe)
 
 
+def _grid_1d_only(spec, fn_name):
+    if spec.d > 1:
+        raise NotImplementedError(
+            f"{fn_name}: dense-grid ground truth is 1-D only; {spec.name} has d={spec.d}. "
+            "Phase 2c will add a Sobol+polish version for the multi-dim problems.")
+
+
 def ground_truth_min(spec, n=4000):
+    _grid_1d_only(spec, "ground_truth_min")
     x1 = np.linspace(spec.lb, spec.ub, n)
     return float(min(spec.f_true_level(x1, lv).min() for lv in spec.levels))
 
 
 def true_opt_location(spec, n=4000):
+    _grid_1d_only(spec, "true_opt_location")
     x1 = np.linspace(spec.lb, spec.ub, n)
     best = (np.inf, None, None)
     for lv in spec.levels:
@@ -270,5 +283,6 @@ def true_opt_location(spec, n=4000):
 
 
 def true_min_per_category(spec, n=4000):
+    _grid_1d_only(spec, "true_min_per_category")
     x1 = np.linspace(spec.lb, spec.ub, n)
     return np.array([spec.f_true_level(x1, lv).min() for lv in spec.levels])
