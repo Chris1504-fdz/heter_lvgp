@@ -32,11 +32,19 @@ To keep bit-exactness at d = 1, three things must reduce exactly:
 2. The d-dim acquisition optimizer must reduce to the current `linspace(256)` + L-BFGS-from-top-3 at d=1.
 3. The d-dim aleatoric polynomial must reduce to `[1, w, w²]` at d=1.
 
+### Regression oracle
+`regress_1d.py` re-runs a spread of stored 1-D cells and diffs bit-for-bit. **Baseline confirmed: current
+pipeline reproduces its own results to worst |Δ| = 0.00e+00** (6 python cells), so the oracle is real.
+Run `python regress_1d.py` after every step (add `--matlab` for the 2 LVGP cells).
+
 ### Checklist
-- [ ] `utils/doe.py` — `make_doe_nd`: skip the dim-shuffle when d==1 (bit-exact RNG at d=1).
-- [ ] `utils/problems.py` — `ProblemSpec`: vector `bounds` + `d` (geometry already in `doe.PROBLEM_GRID`);
-      `f(X, level)` / `sigma(X, level)` take `X` of shape (n, d); `initial_doe` → `make_doe_nd`.
+- [x] `utils/doe.py` — `make_doe_nd`: skip the dim-shuffle when d==1. **Verified: d=1 identical points +
+      identical rng state; d>1 SLHD invariants hold.**
+- [x] `utils/problems.py` — `ProblemSpec`: vector `bounds` + `.d`; `f(X,level)`/`sigma(X,level)` take
+      (n,d) for d>1, bare (n,) x1 for d==1 (existing 1-D f untouched). **Regression bit-exact (6/6).**
+      _(still TODO in this file: `initial_doe` → `make_doe_nd` — that's Step 3.)_
 - [ ] `utils/doe_cache.py` — `X_sample` becomes (n, d+1) = `[x1..xd, level]` (already (n,2) at d=1).
+- [ ] `utils/problems.py::initial_doe` → `make_doe_nd` (loop over d continuous cols).
 - [ ] `utils/bo.py` — per-level data holds `X` (n,d); `_minimize_1d` → `_minimize_nd`
       (grid/Sobol + multi-start L-BFGS; must reduce exactly at d=1).
 - [ ] `utils/models/base.py` — aleatoric poly: degree-2 in *d* vars **with cross terms**
@@ -45,8 +53,7 @@ To keep bit-exactness at d = 1, three things must reduce exactly:
 - [ ] `matlab/{heter,standard}_driver.m` — `ind_qual = d+1`, `X_range_continuous` is (2, d),
       objective handle over `X(:,1:d)`.
 - [ ] `utils/results.py` — de-hardcode `reshape(-1, 2)` → (n, d+1); `f_true_level(x[:-1], level)`.
-- [ ] **REGRESSION**: re-run a set of 1-D cells and diff against the existing `results/` — must match
-      bit-for-bit (DOE, X_sampled, Y_sampled, trajectories).
+- [ ] **REGRESSION**: full `regress_1d.py --matlab` bit-exact after all steps.
 
 ---
 
