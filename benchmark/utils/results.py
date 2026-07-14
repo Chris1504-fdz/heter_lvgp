@@ -244,8 +244,13 @@ def sigma2_at_best_traj(run, spec, ground_truth=True):
     return run["Y_var_sampled"][idx]
 
 
-def _panel(ax, grid, function, acf, param, n_rep, series_fn, ylabel, logy, title_extra=""):
-    """Shared plumbing: overlay every model's mean +/- s.e. trajectory on one axes."""
+def _panel(ax, grid, function, acf, param, n_rep, series_fn, ylabel, logy, title_extra="",
+           center="mean"):
+    """Shared plumbing: overlay every model's trajectory on one axes.
+    center='mean'   -> mean with a +/- standard-error band ("expected performance")
+    center='median' -> MEDIAN with an inter-quartile (25-75%) band ("typical run").
+    They disagree when the per-seed distribution is skewed -- which it often is here (a few bad seeds
+    inflate the mean), so the median view is the honest one for heavy-tailed regret."""
     spec = P.get(function)
     any_data = False
     for m in _ordered_models(grid):
@@ -255,13 +260,18 @@ def _panel(ax, grid, function, acf, param, n_rep, series_fn, ylabel, logy, title
         trajs = [series_fn(r, spec) for r in runs]
         L = min(len(t) for t in trajs)
         A = np.array([t[:L] for t in trajs])
-        mean = A.mean(0)
-        sem = A.std(0, ddof=1) / np.sqrt(len(A)) if len(A) > 1 else np.zeros(L)
+        if center == "median":
+            mid = np.median(A, 0)
+            lo_b, hi_b = np.percentile(A, 25, axis=0), np.percentile(A, 75, axis=0)
+        else:
+            mid = A.mean(0)
+            sem = A.std(0, ddof=1) / np.sqrt(len(A)) if len(A) > 1 else np.zeros(L)
+            lo_b, hi_b = mid - sem, mid + sem
         x = np.arange(1, L + 1)
-        lo = np.maximum(mean - sem, 1e-12) if logy else mean - sem
-        ax.plot(x, np.maximum(mean, 1e-12) if logy else mean,
-                color=MODEL_COLORS.get(m, "C7"), lw=2, label=f"{_mlabel(m)} (n={len(A)})")
-        ax.fill_between(x, lo, mean + sem, color=MODEL_COLORS.get(m, "C7"), alpha=0.15)
+        lo = np.maximum(lo_b, 1e-12) if logy else lo_b
+        ax.plot(x, np.maximum(mid, 1e-12) if logy else mid,
+                color=MODEL_COLORS.get(m, "C7"), lw=2) # label=f"{_mlabel(m)} (n={len(A)})"
+        ax.fill_between(x, lo, hi_b, color=MODEL_COLORS.get(m, "C7"), alpha=0.15)
         any_data = True
     if logy:
         ax.set_yscale("log")
@@ -277,7 +287,7 @@ def _panel(ax, grid, function, acf, param, n_rep, series_fn, ylabel, logy, title
 
 
 def facet(grid, kind, functions=None, acf="ei", param=float("nan"), n_rep=10,
-          ground_truth=True, logy=True, ncol=2, figsize=(6.4, 4.4)):
+          ground_truth=True, logy=True, ncol=2, figsize=(6.4, 4.4), center="mean"):
     """One panel per test function, models overlaid. kind:
          'regret'   value - f*            (log axis when logy)
          'value'    best true value, with the f* horizontal line
@@ -294,10 +304,10 @@ def facet(grid, kind, functions=None, acf="ei", param=float("nan"), n_rep=10,
         if kind == "regret":
             base = _true_best_traj if ground_truth else _noisy_best_traj
             _panel(ax, grid, fn, acf, param, n_rep, lambda r, s: base(r, s) - fstar,
-                   "regret = value − f*", logy)
+                   "regret = value − f*", logy, center=center)
         elif kind == "value":
             base = _true_best_traj if ground_truth else _noisy_best_traj
-            ok = _panel(ax, grid, fn, acf, param, n_rep, base, "best value", False)
+            ok = _panel(ax, grid, fn, acf, param, n_rep, base, "best value", False, center=center)
             if ok:
                 ax.axhline(fstar, color="grey", ls="--", lw=1.2)
                 ax.annotate(f"f* = {fstar:.3f}", xy=(0.98, fstar), xycoords=("axes fraction", "data"),
@@ -305,7 +315,7 @@ def facet(grid, kind, functions=None, acf="ei", param=float("nan"), n_rep=10,
         elif kind == "sigma2":
             _panel(ax, grid, fn, acf, param, n_rep,
                    lambda r, s: sigma2_at_best_traj(r, s, ground_truth),
-                   "σ² at incumbent", logy)
+                   "σ² at incumbent", logy, center=center)
         else:
             raise ValueError(f"unknown kind {kind!r}")
     for k in range(len(fns), nrow * ncol):
@@ -317,40 +327,46 @@ def facet(grid, kind, functions=None, acf="ei", param=float("nan"), n_rep=10,
 
 
 def heatmaps_by_function(grid, functions=None, n_rep=10, ground_truth=True, ncol=2,
-                         configs=None, annot_fmt="{:.2f}"):
-    """One heatmap per function: final regret for every (acquisition x model) actually present.
-    Rows with no data anywhere are dropped, so there are no blank bands."""
+                         configs=None, annot_fmt=None, metric="regret"):
+    """One conventional heatmap per problem: rows = acquisition, cols = model, cell = final `metric`
+    ('regret' = value − f*, or 'noise' = σ² at the incumbent; both lower = better). Sequential viridis
+    colour scale with a real value colorbar per panel. Rows/configs with no data anywhere are dropped."""
     import matplotlib.pyplot as plt
     fns = functions or grid.functions()
     cfgs = configs or acquisitions.CONFIG_ORDER
     models = _ordered_models(grid)
+    fmt = annot_fmt or ("{:.3f}" if metric == "regret" else "{:.3g}")
+    lab = "regret" if metric == "regret" else "σ² at incumbent"
     nrow = (len(fns) + ncol - 1) // ncol
-    fig, axes = plt.subplots(nrow, ncol, figsize=(1.9 * len(models) + 3.2, 2.6 * nrow), squeeze=False)
+    fig, axes = plt.subplots(nrow, ncol, figsize=(1 * len(models) + 3.2, 2.9 * nrow), squeeze=False)
     for ax, fn in zip(axes.ravel(), fns):
         spec = P.get(fn); fstar = P.ground_truth_min(spec)
-        base = _true_best_traj if ground_truth else _noisy_best_traj
         rows, labels = [], []
         for (a, p) in cfgs:
             row = []
             for m in models:
-                runs = grid.select(function=fn, model=m, acf=a, param=p, n_rep=n_rep)
-                row.append(np.mean([base(r, spec)[-1] - fstar for r in runs]) if runs else np.nan)
+                runs = (grid.select(function=fn, model=m, acf=a, param=p, n_rep=n_rep)
+                        if a in MODELS[m].supports else [])
+                row.append(np.mean([_final_metric(r, spec, fstar, metric, ground_truth) for r in runs])
+                           if runs else np.nan)
             if not np.all(np.isnan(row)):
                 rows.append(row); labels.append(acquisitions.label(a, p))
         if not rows:
             ax.text(0.5, 0.5, "no data yet", ha="center", va="center", transform=ax.transAxes,
                     color="crimson"); ax.set_title(fn, fontsize=10); ax.axis("off"); continue
         M = np.array(rows)
-        im = ax.imshow(M, cmap="viridis_r", aspect="auto")
+        im = ax.imshow(np.ma.masked_invalid(M), cmap="viridis_r", aspect="auto")
+        ax.set_facecolor("0.85")                              # NaN (unsupported acq × model) shows grey
         ax.set_xticks(range(len(models))); ax.set_xticklabels([_mlabel(m) for m in models],
                                                               rotation=30, ha="right", fontsize=7)
         ax.set_yticks(range(len(labels))); ax.set_yticklabels(labels, fontsize=7)
+        mmean = np.nanmean(M)
         for i in range(M.shape[0]):
             for j in range(M.shape[1]):
                 if not np.isnan(M[i, j]):
-                    ax.text(j, i, annot_fmt.format(M[i, j]), ha="center", va="center", fontsize=6,
-                            color="w" if M[i, j] > np.nanmean(M) else "k")
-        ax.set_title(f"{fn}  (final regret, n_rep={n_rep})", fontsize=9)
+                    ax.text(j, i, fmt.format(M[i, j]), ha="center", va="center", fontsize=6,
+                            color="w" if M[i, j] > mmean else "k")
+        ax.set_title(f"{fn}  (final {lab}, n_rep={n_rep})", fontsize=9)
         fig.colorbar(im, ax=ax, fraction=0.046)
     for k in range(len(fns), nrow * ncol):
         axes.ravel()[k].axis("off")
@@ -651,7 +667,7 @@ def sampling_trajectory(grid, function, acf="ei", param=float("nan"), n_rep=10, 
 
 
 def acquisition_facet(grid, function, models=None, n_rep=10, ground_truth=True, ncol=3,
-                      share_y=True, noise_aware_only=False, ax_size=(4.7, 3.5)):
+                      share_y=True, noise_aware_only=False, ax_size=(3.5, 3.5), center="mean"):#ax_size=(4.7, 3.5)):
     """One panel PER ACQUISITION (from CONFIG_ORDER, those with data), each overlaying every model's
     regret convergence (mean ± s.e., log axis). Colour = model. With `share_y` all panels use ONE
     y-range (from the mean curves) so the acquisitions are directly comparable at a glance.
@@ -670,7 +686,7 @@ def acquisition_facet(grid, function, models=None, n_rep=10, ground_truth=True, 
     fig, axes = plt.subplots(nrow, ncol, figsize=(ax_size[0] * ncol, ax_size[1] * nrow), squeeze=False)
     for ax, (a, p) in zip(axes.ravel(), cfgs):
         _panel(ax, grid, function, a, p, n_rep, lambda r, s: base(r, s) - fstar,
-               "regret (true) = value − f*", True)
+               "regret (true) = value − f*", True, center=center)
         ax.set_title(acquisitions.label(a, p), fontsize=10)
     for k in range(len(cfgs), nrow * ncol):
         axes.ravel()[k].axis("off")
@@ -845,17 +861,7 @@ def latent_space(grid, function, models=None, acf="ei", param=float("nan"), n_re
         ax.set_title(f"{_mlabel(m)} — latent map (seed {seed_run['seed']})", fontsize=10)
         ax.grid(alpha=0.3); ax.set_aspect("equal", adjustable="datalim")
 
-    # RANK-vs-RANK recovery. The LVGP embedding is identifiable only up to rotation/reflection/SCALE,
-    # so an isometry (y = x on raw distances) is not a meaningful target -- only the ORDER of the
-    # pairwise distances is. Plotting rank(true) vs rank(latent) makes the y = x diagonal mean exactly
-    # "perfect Spearman ρ = 1": points on it = pairs ordered correctly, points off it = pairs the
-    # embedding put out of order.
-    from scipy.stats import rankdata
     axr = axes[-1]
-    rt = rankdata(dtrue)
-    npair = len(dtrue)
-    axr.plot([0.5, npair + 0.5], [0.5, npair + 0.5], "k--", lw=1.3, zorder=1,
-             label="perfect fidelity (ρ = 1)")
     for m in models:
         runs = _latent_runs(grid, function, m, acf, param, n_rep)
         dz_pool, rhos = [], []
@@ -863,20 +869,689 @@ def latent_space(grid, function, models=None, acf="ei", param=float("nan"), n_re
             z = np.asarray(r["hyper_z"], float)
             Dz = np.sqrt(((z[:, None, :] - z[None, :, :]) ** 2).sum(-1))[iu]
             if Dz.max() > 0:
-                dz_pool.append(Dz)
-                rhos.append(spearmanr(Dz, dtrue).statistic)     # rank corr, invariant to the scale ambiguity
+                dz_pool.append(Dz / Dz.mean())               # scale-normalize per seed
+                rhos.append(spearmanr(Dz, dtrue).statistic)
         if not dz_pool:
             continue
-        rz = rankdata(np.mean(dz_pool, 0))
+        dz_mean = np.mean(dz_pool, 0)
         col = MODEL_COLORS.get(m, "C7")
-        axr.scatter(rt, rz, color=col, s=55, edgecolor="k", lw=0.4, zorder=3,
+        axr.scatter(dtrue, dz_mean, color=col, s=45, edgecolor="k", lw=0.4, zorder=3,
                     label=f"{_mlabel(m)}  ρ={np.mean(rhos):.2f}±{np.std(rhos):.2f}")
-    axr.set_xlabel("rank of TRUE distance between levels")
-    axr.set_ylabel("rank of LEARNED latent distance")
-    axr.set_title(f"latent vs true geometry (rank–rank)\ndiagonal = faithful ordering; "
-                  f"Spearman ρ over {len(runs)} seeds", fontsize=10)
-    axr.set_aspect("equal", adjustable="box"); axr.grid(alpha=0.3); axr.legend(fontsize=8)
+    axr.set_xlabel("TRUE curve distance between levels")
+    axr.set_ylabel("learned latent distance (seed-normalized)")
+    axr.set_title(f"latent vs true geometry\n(Spearman ρ over {len(runs)} seeds; ρ→1 = faithful)",
+                  fontsize=10)
+    axr.grid(alpha=0.3); axr.legend(fontsize=8)
     fig.suptitle(f"{function} — LVGP latent space vs ground truth "
                  f"({acquisitions.label(acf, param)}, n_rep={n_rep})", y=1.02, fontsize=12)
     fig.tight_layout()
     return fig
+
+
+# ======================================================================================
+#  ACQUISITION-FUNCTION COMPARISON TABLES
+# ======================================================================================
+def acquisition_tables(grid, model="heter_LVGP", n_rep=10, functions=None):
+    """Per-acquisition final performance for ONE model (rows = the 6 acquisitions, cols = problems).
+    Returns (regret_df, noisy_df):
+      regret = true_best − f*  (noise-free value at the sampled points; the honest metric)
+      noisy  = best observed replicate-MEAN value (what the optimizer saw; can dip below f*)
+    Both as 'mean ± sd' over seeds. Fixing the model isolates the acquisition effect; use a model that
+    supports all 6 (heter_LVGP / separate_gp / categorical_kernel)."""
+    import pandas as pd
+    fns = functions or grid.functions()
+    reg, noi, regn, noin = {}, {}, {}, {}
+    for (a, p) in acquisitions.CONFIG_ORDER:
+        lab = acquisitions.label(a, p); rrow, nrow, rn, nn = {}, {}, {}, {}
+        for fn in fns:
+            spec = P.get(fn); fstar = P.ground_truth_min(spec)
+            runs = grid.select(function=fn, model=model, acf=a, param=p, n_rep=n_rep)
+            if not runs:
+                rrow[fn] = nrow[fn] = "—"; rn[fn] = nn[fn] = np.nan; continue
+            r = np.array([_true_best_traj(x, spec)[-1] - fstar for x in runs])
+            v = np.array([_noisy_best_traj(x, spec)[-1] for x in runs])
+            rrow[fn] = f"{r.mean():.3g} ± {r.std():.2g}"; rn[fn] = float(r.mean())
+            nrow[fn] = f"{v.mean():.3g} ± {v.std():.2g}"; nn[fn] = float(v.mean())
+        reg[lab] = rrow; noi[lab] = nrow; regn[lab] = rn; noin[lab] = nn
+    R = pd.DataFrame(reg).T[fns]; N = pd.DataFrame(noi).T[fns]
+    R.index.name = N.index.name = f"{_mlabel(model)}: acquisition"
+    R.attrs["means"] = pd.DataFrame(regn).T[fns]; N.attrs["means"] = pd.DataFrame(noin).T[fns]
+    return R, N
+
+
+def acquisition_ranking(grid, n_rep=10, functions=None):
+    """CONCLUSIVE cross-problem ranking of the 6 acquisitions. Raw regret spans orders of magnitude
+    across problems, so averaging it is meaningless -- this uses RANKS instead: within each
+    (problem, model) cell the 6 acquisitions are ranked by mean final true regret (1 = best), then each
+    acquisition's rank is averaged over every cell. Only models supporting all 6 acquisitions are used
+    (heter_LVGP / separate_gp / categorical_kernel), so the comparison is on equal footing.
+    Lower mean_rank = better overall; `wins` = # cells where it was the single best.
+    Returns (dataframe, n_cells, models_used)."""
+    import pandas as pd
+    fns = functions or grid.functions()
+    allacq = set(a for a, _ in acquisitions.CONFIG_ORDER)
+    full = [m for m in _ordered_models(grid) if allacq <= set(MODELS[m].supports)]
+    cfgs = list(acquisitions.CONFIG_ORDER)
+    ranks = {acquisitions.label(a, p): [] for a, p in cfgs}
+    wins = {acquisitions.label(a, p): 0 for a, p in cfgs}
+    cells = 0
+    for fn in fns:
+        spec = P.get(fn); fstar = P.ground_truth_min(spec)
+        for m in full:
+            vals, complete = {}, True
+            for (a, p) in cfgs:
+                runs = grid.select(function=fn, model=m, acf=a, param=p, n_rep=n_rep)
+                if not runs:
+                    complete = False; break
+                vals[(a, p)] = np.mean([_true_best_traj(x, spec)[-1] - fstar for x in runs])
+            if not complete:
+                continue
+            cells += 1
+            order = sorted(cfgs, key=lambda c: vals[c])
+            for rk, c in enumerate(order, 1):
+                ranks[acquisitions.label(*c)].append(rk)
+            wins[acquisitions.label(*order[0])] += 1
+    rows = []
+    for (a, p) in cfgs:
+        lab = acquisitions.label(a, p); rr = ranks[lab]
+        rows.append(dict(acquisition=lab, mean_rank=round(float(np.mean(rr)), 2) if rr else None,
+                         median_rank=float(np.median(rr)) if rr else None,
+                         wins=wins[lab], n_cells=len(rr)))
+    df = pd.DataFrame(rows).set_index("acquisition").sort_values("mean_rank")
+    return df, cells, [_mlabel(m) for m in full]
+
+
+# ======================================================================================
+#  METHOD (SURROGATE-MODEL) COMPARISON TABLES  +  the combined method×acq leaderboard
+# ======================================================================================
+def method_tables(grid, acf="ei", param=float("nan"), n_rep=10, functions=None):
+    """Per-model final performance for ONE acquisition (rows = the 4 models, cols = problems).
+    Default acf='ei' is noise-blind, so all 4 models (incl. standard_LVGP) appear. Returns
+    (regret_df, noisy_df) as 'mean ± sd' over seeds -- same metrics as acquisition_tables."""
+    import pandas as pd
+    fns = functions or grid.functions()
+    reg, noi, regn, noin = {}, {}, {}, {}
+    for m in _ordered_models(grid):
+        rrow, nrow, rn, nn = {}, {}, {}, {}
+        for fn in fns:
+            spec = P.get(fn); fstar = P.ground_truth_min(spec)
+            runs = grid.select(function=fn, model=m, acf=acf, param=param, n_rep=n_rep)
+            if not runs:
+                rrow[fn] = nrow[fn] = "—"; rn[fn] = nn[fn] = np.nan; continue
+            r = np.array([_true_best_traj(x, spec)[-1] - fstar for x in runs])
+            v = np.array([_noisy_best_traj(x, spec)[-1] for x in runs])
+            rrow[fn] = f"{r.mean():.3g} ± {r.std():.2g}"; rn[fn] = float(r.mean())
+            nrow[fn] = f"{v.mean():.3g} ± {v.std():.2g}"; nn[fn] = float(v.mean())
+        reg[_mlabel(m)] = rrow; noi[_mlabel(m)] = nrow; regn[_mlabel(m)] = rn; noin[_mlabel(m)] = nn
+    R = pd.DataFrame(reg).T[fns]; N = pd.DataFrame(noi).T[fns]
+    R.index.name = N.index.name = f"acq={acquisitions.label(acf, param)}: model"
+    R.attrs["means"] = pd.DataFrame(regn).T[fns]; N.attrs["means"] = pd.DataFrame(noin).T[fns]
+    return R, N
+
+
+def _mean_regret(grid, fn, m, a, p, n_rep, spec, fstar):
+    runs = grid.select(function=fn, model=m, acf=a, param=p, n_rep=n_rep)
+    return np.mean([_true_best_traj(x, spec)[-1] - fstar for x in runs]) if runs else None
+
+
+def method_ranking(grid, n_rep=10, functions=None):
+    """CONCLUSIVE model ranking, from two fair angles (raw regret can't be averaged across problems):
+      mean_rank_bestacq : each model uses its OWN best acquisition per problem (min regret), then the
+                          4 models are ranked within each problem and averaged -> 'model at its best'.
+                          This is the fair view for heter_LVGP, whose edge needs a noise-aware acq.
+      mean_rank_blind   : all 4 models ranked on the SHARED noise-blind acqs (ei/lcb/pi) only -- the
+                          apples-to-apples same-acquisition comparison (12 cells).
+    Lower = better. `wins_bestacq` = # problems the model's best config is the overall best."""
+    import pandas as pd
+    fns = functions or grid.functions()
+    models = _ordered_models(grid)
+    blind = [(a, p) for (a, p) in acquisitions.CONFIG_ORDER if not acquisitions.needs_aleatoric(a)]
+    rb = {m: [] for m in models}; rl = {m: [] for m in models}; wins = {m: 0 for m in models}
+    best_acq = {m: [] for m in models}
+    for fn in fns:
+        spec = P.get(fn); fstar = P.ground_truth_min(spec)
+        # best-acq-per-model
+        best = {}
+        for m in models:
+            cand = [(a, p) for (a, p) in acquisitions.CONFIG_ORDER if a in MODELS[m].supports]
+            regs = [(_mean_regret(grid, fn, m, a, p, n_rep, spec, fstar), (a, p)) for (a, p) in cand]
+            regs = [(r, ap) for r, ap in regs if r is not None]
+            if regs:
+                r, ap = min(regs, key=lambda t: t[0]); best[m] = r; best_acq[m].append(acquisitions.label(*ap))
+        order = sorted(best, key=lambda m: best[m])
+        for rk, m in enumerate(order, 1):
+            rb[m].append(rk)
+        if order:
+            wins[order[0]] += 1
+        # shared noise-blind ranking, per blind acq
+        for (a, p) in blind:
+            vals = {m: _mean_regret(grid, fn, m, a, p, n_rep, spec, fstar) for m in models}
+            vals = {m: v for m, v in vals.items() if v is not None}
+            for rk, m in enumerate(sorted(vals, key=lambda m: vals[m]), 1):
+                rl[m].append(rk)
+    rows = []
+    from collections import Counter
+    for m in models:
+        rows.append(dict(model=_mlabel(m),
+                         mean_rank_bestacq=round(float(np.mean(rb[m])), 2) if rb[m] else None,
+                         wins_bestacq=wins[m],
+                         mean_rank_blind=round(float(np.mean(rl[m])), 2) if rl[m] else None,
+                         usual_best_acq=Counter(best_acq[m]).most_common(1)[0][0] if best_acq[m] else "—"))
+    return pd.DataFrame(rows).set_index("model").sort_values("mean_rank_bestacq")
+
+
+def method_acq_leaderboard(grid, n_rep=10, functions=None, top=None):
+    """THE combined leaderboard: every (model × acquisition) configuration ranked. Within each problem
+    all available configs are ranked by mean regret (1=best); mean_rank is averaged over the problems.
+    Top row = the single best configuration overall. `wins` = # problems it is the outright best config.
+    This answers 'what is the best method+acquisition to use', pooling both factors. `top` truncates."""
+    import pandas as pd
+    fns = functions or grid.functions()
+    combos = [(m, a, p) for m in _ordered_models(grid)
+              for (a, p) in acquisitions.CONFIG_ORDER if a in MODELS[m].supports]
+    ranks = {c: [] for c in combos}; wins = {c: 0 for c in combos}
+    for fn in fns:
+        spec = P.get(fn); fstar = P.ground_truth_min(spec)
+        vals = {c: _mean_regret(grid, fn, c[0], c[1], c[2], n_rep, spec, fstar) for c in combos}
+        avail = [c for c in combos if vals[c] is not None]
+        order = sorted(avail, key=lambda c: vals[c])
+        for rk, c in enumerate(order, 1):
+            ranks[c].append(rk)
+        if order:
+            wins[order[0]] += 1
+    rows = []
+    for (m, a, p) in combos:
+        rr = ranks[(m, a, p)]
+        rows.append(dict(model=_mlabel(m), acquisition=acquisitions.label(a, p),
+                         mean_rank=round(float(np.mean(rr)), 2) if rr else None,
+                         best_rank=int(min(rr)) if rr else None, wins=wins[(m, a, p)]))
+    df = pd.DataFrame(rows).sort_values("mean_rank").set_index(["model", "acquisition"])
+    return df if top is None else df.head(top)
+
+
+# Risk-aversion coefficient for the mean-variance (RAHBO) robustness metric MV = f + alpha*sigma^2.
+# alpha is a modelling choice (how much you penalise noise); rankings can shift with it.
+MV_ALPHA = 1.0
+_MV_STAR = {}
+
+
+def _mv_star(spec, alpha, n=4000):
+    """True mean-variance optimum  min_{x,ℓ} [ f(x,ℓ) + alpha*sigma(x,ℓ)^2 ]  (cached per (problem, alpha))."""
+    key = (spec.name, alpha)
+    if key not in _MV_STAR:
+        x = np.linspace(spec.lb, spec.ub, n)
+        _MV_STAR[key] = min(float((spec.f_true_level(x, lv) + alpha * spec.sigma_level(x, lv) ** 2).min())
+                            for lv in spec.levels)
+    return _MV_STAR[key]
+
+
+def _mv_sampled(run, spec, alpha):
+    """True MV = f + alpha*sigma^2 at every sampled point (from the stored true f/sigma; recomputed on a v1 cell)."""
+    f = run.get("f_true_sampled"); sig = run.get("sigma_true_sampled")
+    if f is None or sig is None:
+        X = run["X_sampled"]
+        f = np.array([spec.f_true_level(x[0], int(round(x[1]))) for x in X])
+        sig = np.array([spec.sigma_level(x[0], int(round(x[1]))) for x in X])
+    return np.asarray(f, float) + alpha * np.asarray(sig, float) ** 2
+
+
+def _final_metric(run, spec, fstar, metric, ground_truth):
+    """Final value of the chosen metric for one run (all lower-is-better):
+      'regret' value − f* · 'noise' σ² at incumbent · 'mv' mean-variance regret (RAHBO robustness)."""
+    if metric == "regret":
+        base = _true_best_traj if ground_truth else _noisy_best_traj
+        return base(run, spec)[-1] - fstar
+    if metric == "noise":                                    # true σ² at the incumbent best design
+        return sigma2_at_best_traj(run, spec, ground_truth)[-1]
+    if metric == "mv":                                       # RAHBO mean-variance regret: robust optimum
+        return float(np.min(_mv_sampled(run, spec, MV_ALPHA))) - _mv_star(spec, MV_ALPHA)
+    raise ValueError(f"metric must be 'regret', 'noise' or 'mv', got {metric!r}")
+
+
+def acq_method_table(grid, metric="regret", n_rep=10, functions=None, ground_truth=True):
+    """Full table over EVERY (acquisition × model) configuration for one METRIC (both lower-is-better):
+      metric='regret' -> final true regret (value − f*)
+      metric='noise'  -> final σ² at the incumbent best design (the noise you'd deploy into)
+    rows = MultiIndex (acquisition, model), cols = problems, cells = 'mean ± sd'. Includes every model
+    that supports each acquisition (standard_LVGP appears only on the noise-blind acquisitions).
+    Style two ways: style_best(df, group_level='acquisition') = best model per acquisition;
+    style_best(df) = single best (acq, model) combo per problem."""
+    import pandas as pd
+    fns = functions or grid.functions()
+    rows, nums = {}, {}
+    for (a, p) in acquisitions.CONFIG_ORDER:
+        for m in _ordered_models(grid):
+            if a not in MODELS[m].supports:
+                continue
+            row, nrow = {}, {}
+            for fn in fns:
+                spec = P.get(fn); fstar = P.ground_truth_min(spec)
+                runs = grid.select(function=fn, model=m, acf=a, param=p, n_rep=n_rep)
+                if not runs:
+                    row[fn] = "—"; nrow[fn] = np.nan; continue
+                v = np.array([_final_metric(x, spec, fstar, metric, ground_truth) for x in runs])
+                row[fn] = f"{v.mean():.3g} ± {v.std():.2g}"; nrow[fn] = float(v.mean())
+            key = (acquisitions.label(a, p), _mlabel(m))
+            rows[key] = row; nums[key] = nrow
+    df = pd.DataFrame(rows).T[fns]
+    df.index = pd.MultiIndex.from_tuples(df.index, names=["acquisition", "model"])
+    nd = pd.DataFrame(nums).T[fns]; nd.index = df.index
+    df.attrs["means"] = nd                                    # full-precision means for tie-free highlighting
+    return df
+
+
+def acq_method_regret_table(grid, n_rep=10, functions=None):
+    """Backwards-compatible wrapper: the regret variant of acq_method_table."""
+    return acq_method_table(grid, "regret", n_rep, functions, ground_truth=True)
+
+
+def acq_method_heatmap(grid, metric="regret", n_rep=10, functions=None, ground_truth=True, ncol=2):
+    """Conventional per-problem heatmaps (rows = acquisition, cols = model, viridis value colorbar) for
+    the given metric ('regret' or 'noise'). Thin wrapper over heatmaps_by_function."""
+    return heatmaps_by_function(grid, functions=functions, n_rep=n_rep, ground_truth=ground_truth,
+                                ncol=ncol, metric=metric)
+
+
+def export_acq_method_excel(grid, path="acq_method_tables.xlsx", n_reps=(3, 10), functions=None,
+                            ground_truth=True):
+    """SEPARATE workbook for the full (acquisition × method) tables: ONE combined sheet per
+    {regret, noise} × {n_reps} -- bold = best model per acquisition, green = best combo overall.
+    (One sheet instead of the old per-acq + combo pair.)"""
+    fns = functions or grid.functions()
+    specs = []
+    for metric in ("regret", "noise", "mv"):                 # mv = RAHBO mean-variance robustness
+        for nr in n_reps:
+            df = acq_method_table(grid, metric, nr, fns, ground_truth)
+            colmin = {c: "min" for c in df.columns}
+            specs.append((f"{metric}_nrep{nr:02d}", df, colmin, "acquisition", "combined"))
+    export_tables_excel(specs, path)
+    return path
+
+
+# ======================================================================================
+#  TABLE FORMATTING: bold-the-best styling (notebook) + formatted multi-sheet Excel export
+# ======================================================================================
+def _cell_mean(x):
+    """Leading number of a 'mean ± sd' string (or a plain number); NaN if unparseable/'—'."""
+    try:
+        return float(str(x).split("±")[0])
+    except Exception:
+        return float("nan")
+
+
+_BEST_CSS = "font-weight:bold;background-color:#c6efce"
+
+
+def _best_mask(df, directions=None, group_level=None):
+    """Boolean array (rows × cols): True where a cell is the best in its column. group_level=None -> best
+    over the WHOLE column; an index level -> best WITHIN each group of that level (e.g. per acquisition).
+    Comparison uses the FULL-PRECISION means in df.attrs['means'] when present (so cells that merely
+    ROUND to the same displayed value, e.g. many '0.01' noise cells, don't all tie); otherwise it falls
+    back to parsing the displayed 'mean ± sd' string. Constant / all-NaN columns/groups get no marks."""
+    import pandas as pd
+    means = getattr(df, "attrs", {}).get("means")
+    if means is not None:
+        num = means.reindex(index=df.index, columns=df.columns)
+    else:
+        num = df.apply(lambda c: c.map(_cell_mean))
+    mask = np.zeros(df.shape, bool)
+    lvl = np.asarray(df.index.get_level_values(group_level)) if group_level is not None else None
+    for jc, col in enumerate(df.columns):
+        v = num[col].to_numpy(float)
+        d = (directions or {}).get(col, "min")
+        groups = [np.arange(len(v))] if lvl is None else [np.where(lvl == g)[0] for g in pd.unique(lvl)]
+        for pos in groups:
+            sub = v[pos]
+            if np.all(np.isnan(sub)) or np.nanmin(sub) == np.nanmax(sub):
+                continue
+            best = np.nanmin(sub) if d == "min" else np.nanmax(sub)
+            mask[pos[sub == best], jc] = True
+    return mask
+
+
+def style_best(df, directions=None, group_level=None):
+    """pandas Styler that BOLDS + green-fills the best cell per column. `directions` maps a column to
+    'min' (default) or 'max'. `group_level` (an index level) restricts "best" to WITHIN each group of
+    that level -- e.g. group_level='acquisition' bolds the best model for each acquisition."""
+    import pandas as pd
+    m = _best_mask(df, directions, group_level)
+    styles = pd.DataFrame(np.where(m, _BEST_CSS, ""), index=df.index, columns=df.columns)
+    return df.style.apply(lambda _: styles, axis=None)
+
+
+def style_best_combined(df, directions=None, group_level="acquisition"):
+    """ONE table, two levels of emphasis (so two separate tables aren't needed):
+      **bold**            = best cell WITHIN each `group_level` group per column (e.g. best model per
+                            acquisition),
+      **bold + green**    = best cell over the WHOLE column (the single best (acq × model) combo).
+    The overall best is also its group's best, so it gets both."""
+    import pandas as pd
+    mg = _best_mask(df, directions, group_level)             # best within each group
+    mo = _best_mask(df, directions, None)                    # best overall (per column)
+    css = np.where(mo, _BEST_CSS, np.where(mg, "font-weight:bold", ""))
+    styles = pd.DataFrame(css, index=df.index, columns=df.columns)
+    return df.style.apply(lambda _: styles, axis=None)
+
+
+def export_tables_excel(specs, path):
+    """Write formatted tables to a multi-sheet .xlsx. `specs` entries:
+      (sheet, df, directions)                          -> best cell per column bold + green
+      (sheet, df, directions, group_level)             -> best WITHIN each group bold + green
+      (sheet, df, directions, group_level, 'combined') -> best-per-group BOLD, best-overall bold + GREEN
+    Header bold + frozen; auto-width. Returns the path."""
+    import pandas as pd
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from openpyxl.utils import get_column_letter
+    fill = PatternFill("solid", fgColor="C6EFCE")
+    with pd.ExcelWriter(path, engine="openpyxl") as xw:
+        for spec in specs:
+            sheet, df, directions = spec[0], spec[1], spec[2]
+            group_level = spec[3] if len(spec) > 3 else None
+            combined = len(spec) > 4 and spec[4] == "combined"
+            sh = sheet[:31]
+            df.to_excel(xw, sheet_name=sh)
+            ws = xw.sheets[sh]
+            nidx = df.index.nlevels
+            for cell in ws[1]:
+                cell.font = Font(bold=True); cell.alignment = Alignment(horizontal="center")
+            if combined:
+                for i, jc in zip(*np.where(_best_mask(df, directions, group_level))):
+                    ws.cell(row=i + 2, column=nidx + jc + 1).font = Font(bold=True)
+                for i, jc in zip(*np.where(_best_mask(df, directions, None))):
+                    cc = ws.cell(row=i + 2, column=nidx + jc + 1)
+                    cc.font = Font(bold=True); cc.fill = fill
+            else:
+                for i, jc in zip(*np.where(_best_mask(df, directions, group_level))):
+                    cc = ws.cell(row=i + 2, column=nidx + jc + 1)
+                    cc.font = Font(bold=True); cc.fill = fill
+            for k in range(1, ws.max_column + 1):
+                w = max((len(str(ws.cell(row=r, column=k).value))
+                         for r in range(1, ws.max_row + 1) if ws.cell(row=r, column=k).value is not None),
+                        default=10)
+                ws.column_dimensions[get_column_letter(k)].width = min(max(w + 2, 11), 42)
+            ws.freeze_panes = ws.cell(row=2, column=nidx + 1)
+    return path
+
+
+def export_comparison_tables(grid, path="comparison_tables.xlsx", n_rep=10, functions=None,
+                             acq_model="heter_LVGP"):
+    """Build every acquisition/method/leaderboard table and write them to ONE formatted .xlsx (best
+    cells bold). Returns (path, specs) so the same specs can be reused for styled notebook display."""
+    fns = functions or grid.functions()
+    aR, aN = acquisition_tables(grid, model=acq_model, n_rep=n_rep, functions=fns)
+    aRank, _, _ = acquisition_ranking(grid, n_rep=n_rep, functions=fns)
+    mR, mN = method_tables(grid, acf="ei", n_rep=n_rep, functions=fns)
+    mRank = method_ranking(grid, n_rep=n_rep, functions=fns)
+    lb = method_acq_leaderboard(grid, n_rep=n_rep, functions=fns)
+    colmin = {c: "min" for c in fns}
+    specs = [
+        (f"acq_regret_{acq_model}", aR, colmin),
+        ("acq_noisy_value", aN, colmin),
+        ("acq_ranking", aRank, {"mean_rank": "min", "median_rank": "min", "wins": "max"}),
+        # (the full acquisition × method tables live in the separate acq_method_tables.xlsx)
+        ("method_regret_EI", mR, colmin),
+        ("method_noisy_value_EI", mN, colmin),
+        ("method_ranking", mRank, {"mean_rank_bestacq": "min", "mean_rank_blind": "min",
+                                   "wins_bestacq": "max"}),
+        ("leaderboard", lb, {"mean_rank": "min", "best_rank": "min", "wins": "max"}),
+    ]
+    export_tables_excel(specs, path)
+    return path, specs
+
+
+# ======================================================================================
+#  LaTeX export of the (acquisition × method) tables — booktabs, combined highlighting
+# ======================================================================================
+_PRETTY_FN = {
+    "branin_hetero": "Branin", "sixhump_camel": "Six-hump Camel", "griewank_2d": "Griewank 2-D",
+    "ackley_2d": "Ackley 2-D", "griewank_10d": "Griewank 10-D", "ackley_10d": "Ackley 10-D",
+    "rastrigin_6d": "Rastrigin 6-D", "golinski": "Golinski", "piston": "Piston", "otl_circuit": "OTL Circuit",
+}
+
+
+def _sci_to_tex(t):
+    """'2.6e-08' -> '2.6{\\times}10^{-8}'; plain numbers pass through."""
+    import re
+    t = t.strip()
+    m = re.fullmatch(r"(-?\d*\.?\d+)[eE]([+-]?\d+)", t)
+    return f"{m.group(1)}{{\\times}}10^{{{int(m.group(2))}}}" if m else t
+
+
+def _acq_tex(lab):
+    """'HAEI(γ=0.5)' -> 'HAEI ($\\gamma{=}0.5$)'; greek letters into math."""
+    g = {"γ": "\\gamma", "β": "\\beta", "α": "\\alpha"}
+    if "(" in lab:
+        name, rest = lab.split("(", 1)
+        rest = rest.rstrip(")")
+        for k, v in g.items():
+            rest = rest.replace(k, v)
+        return f"{name} (${rest}$)"
+    return lab
+
+
+def _tex_cell(raw, bold, green):
+    """One 'mean ± sd' cell -> LaTeX math. {\\boldmath} if best-in-group; \\colorbox (green) if
+    best-overall. \\colorbox is used (not \\cellcolor) so only xcolor is needed -- no colortbl/multirow."""
+    s = str(raw).strip()
+    if s in ("—", "-", "nan", "None", ""):
+        body = "--"
+    else:
+        parts = s.split("±")
+        mean = _sci_to_tex(parts[0].strip())
+        body = f"${mean} \\pm {_sci_to_tex(parts[1].strip())}$" if len(parts) > 1 else f"${mean}$"
+    if bold:
+        body = "{\\boldmath" + body + "}"
+    if green:
+        body = "\\colorbox{green!20}{" + body + "}"
+    return body
+
+
+def to_latex_combined(df, directions=None, group_level="acquisition", caption="", label=""):
+    """LaTeX table (booktabs) for a MultiIndex (acquisition, model) DataFrame, with the combined
+    highlighting: BOLD = best model within each acquisition (per problem), GREEN = best (acq, model)
+    combo per problem. Acquisitions are grouped and separated by \\midrule (label on the first row of
+    each group -- no multirow dependency)."""
+    mg = _best_mask(df, directions, group_level)
+    mo = _best_mask(df, directions, None)
+    fns = list(df.columns)
+    idx = list(df.index)
+    order = []
+    for a, _ in idx:
+        if a not in order:
+            order.append(a)
+    L = ["\\begin{table}[htbp]", "\\centering", "\\small",
+         "\\setlength{\\tabcolsep}{4pt}", "\\setlength{\\fboxsep}{2pt}"]
+    if caption:
+        L.append("\\caption{%s}" % caption)
+    if label:
+        L.append("\\label{%s}" % label)
+    L.append("\\begin{tabular}{ll" + "r" * len(fns) + "}")
+    L.append("\\toprule")
+    L.append("Acquisition & Model & " +
+             " & ".join(_PRETTY_FN.get(c, c.replace("_", "\\_")) for c in fns) + " \\\\")
+    L.append("\\midrule")
+    for gi, a in enumerate(order):
+        krows = [k for k, (aa, _) in enumerate(idx) if aa == a]
+        for j, k in enumerate(krows):
+            acq_cell = _acq_tex(a) if j == 0 else ""            # label on first row of the group
+            cells = " & ".join(_tex_cell(df.iloc[k, jc], mg[k, jc], mo[k, jc]) for jc in range(len(fns)))
+            L.append("%s & %s & %s \\\\" % (acq_cell, idx[k][1], cells))
+        L.append("\\midrule" if gi < len(order) - 1 else "\\bottomrule")
+    L += ["\\end{tabular}", "\\end{table}"]
+    return "\n".join(L)
+
+
+_LATEX_PREAMBLE = r"""\documentclass[11pt]{article}
+\usepackage[margin=0.8in,landscape]{geometry}
+\usepackage{booktabs}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{amsmath}
+\title{Benchmark comparison tables --- acquisition $\times$ surrogate model}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\noindent\textbf{Legend.} Each cell is the final metric (mean $\pm$ sd over seeds). \textbf{Bold} marks
+the best model for that acquisition; \colorbox{green!20}{green} marks the single best (acquisition,
+model) combination for that problem. Lower is better for both metrics.
+\vspace{1em}
+"""
+
+
+def export_latex_tables(grid, out_dir="latex", n_reps=(3, 10), functions=None, ground_truth=True,
+                        metrics=("regret", "noise", "mv"), compile_pdf=False):
+    """Write one .tex table per {metric} × {n_rep} (same data as acq_method_tables.xlsx) plus a
+    main.tex that \\input's them all. Returns the list of files written. compile_pdf tries pdflatex."""
+    import os
+    import subprocess
+    os.makedirs(out_dir, exist_ok=True)
+    fns = functions or grid.functions()
+    desc = {"regret": "Final regret (value $-$ $f^*$)",
+            "noise": "Final noise $\\sigma^2$ at the incumbent design",
+            "mv": ("Final mean-variance regret (RAHBO robustness, "
+                   "$\\mathrm{MV}=f+\\alpha\\sigma^2$, $\\alpha=%g$)" % MV_ALPHA)}
+    written, inputs = [], []
+    for metric in metrics:
+        for nr in n_reps:
+            df = acq_method_table(grid, metric, nr, fns, ground_truth)
+            cap = ("%s for every acquisition $\\times$ surrogate model "
+                   "($n_{\\mathrm{rep}}=%d$, mean $\\pm$ sd over seeds)." % (desc[metric], nr))
+            tex = to_latex_combined(df, {c: "min" for c in df.columns}, "acquisition",
+                                    caption=cap, label="tab:%s_nrep%02d" % (metric, nr))
+            f = os.path.join(out_dir, "%s_nrep%02d.tex" % (metric, nr))
+            with open(f, "w") as fh:
+                fh.write(tex + "\n")
+            written.append(f); inputs.append(os.path.basename(f))
+    main = os.path.join(out_dir, "main.tex")
+    with open(main, "w") as fh:
+        fh.write(_LATEX_PREAMBLE + "\n".join("\\input{%s}\n\\clearpage" % i for i in inputs)
+                 + "\n\\end{document}\n")
+    written.append(main)
+    if compile_pdf:
+        subprocess.run(["pdflatex", "-interaction=nonstopmode", "main.tex"], cwd=out_dir,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["pdflatex", "-interaction=nonstopmode", "main.tex"], cwd=out_dir,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        pdf = os.path.join(out_dir, "main.pdf")
+        if os.path.exists(pdf):
+            written.append(pdf)
+    return written
+
+
+# ======================================================================================
+#  PER-SEED DISTRIBUTION VIEWS
+#  Summaries (mean ± sd) hide skew: on branin, RAHBO's MV-regret has mean 0.0040 but MEDIAN 0.0002 --
+#  a few bad seeds inflate the mean 20x. These views show the whole per-seed distribution, so a
+#  "typically much better but occasionally fails" method cannot be mistaken for a tie.
+# ======================================================================================
+def _seed_vals(grid, function, model, acf, param, n_rep, metric, ground_truth):
+    spec = P.get(function); fstar = P.ground_truth_min(spec)
+    runs = grid.select(function=function, model=model, acf=acf, param=param, n_rep=n_rep)
+    return np.array([_final_metric(r, spec, fstar, metric, ground_truth) for r in runs])
+
+
+def seed_boxplot(grid, function, metric="mv", n_rep=10, models=None, ground_truth=True,
+                 logy=True, floor=1e-8, show_points=True, ax=None):
+    """Per-seed distribution of the FINAL metric for every (acquisition × model) config on one problem.
+    Box = median + IQR (+ whiskers); dots = the individual seeds. Grouped by acquisition, coloured by
+    model. Log y (values span orders of magnitude; non-positive values are clipped to `floor`).
+    This is the view that exposes skew -- a low median with a few bad outliers looks nothing like its mean."""
+    import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
+    models = models or _ordered_models(grid)
+    cfgs = list(acquisitions.CONFIG_ORDER)
+    data, pos, cols, xt, xl = [], [], [], [], []
+    rng = np.random.default_rng(0)
+    for gi, (a, p) in enumerate(cfgs):
+        present = [m for m in models if a in MODELS[m].supports
+                   and len(grid.select(function=function, model=m, acf=a, param=p, n_rep=n_rep))]
+        if not present:
+            continue
+        k = len(present)
+        for mi, m in enumerate(present):
+            v = _seed_vals(grid, function, m, a, p, n_rep, metric, ground_truth)
+            data.append(np.maximum(v, floor) if logy else v)
+            pos.append(gi + (mi - (k - 1) / 2) * (0.8 / k))
+            cols.append(MODEL_COLORS.get(m, "C7"))
+        xt.append(gi); xl.append(acquisitions.label(a, p))
+    if not data:
+        if ax is None:
+            _, ax = plt.subplots()
+        ax.text(0.5, 0.5, "no data", ha="center", va="center", transform=ax.transAxes); return ax
+    if ax is None:
+        _, ax = plt.subplots(figsize=(1.9 * len(xt) + 3, 5))
+    w = 0.8 / max(len(models), 1) * 0.85
+    bp = ax.boxplot(data, positions=pos, widths=w, patch_artist=True, showfliers=False,
+                    medianprops=dict(color="k", lw=1.6))
+    for patch, c in zip(bp["boxes"], cols):
+        patch.set_facecolor(c); patch.set_alpha(0.5)
+    if show_points:
+        for v, pp, c in zip(data, pos, cols):
+            ax.scatter(pp + rng.uniform(-w * 0.25, w * 0.25, len(v)), v, s=7, color=c,
+                       edgecolor="k", lw=0.2, alpha=0.7, zorder=3)
+    if logy:
+        ax.set_yscale("log")
+    ax.set_xticks(xt); ax.set_xticklabels(xl, rotation=20, ha="right", fontsize=8)
+    lab = {"regret": "final regret", "noise": "σ² at incumbent", "mv": "MV-regret (robustness)"}[metric]
+    ax.set_ylabel(lab + (" (log)" if logy else ""))
+    ax.set_title(f"{function} — per-seed distribution of {lab} (n_rep={n_rep})\n"
+                 f"box = median + IQR · dots = individual seeds", fontsize=10)
+    ax.grid(alpha=0.3, axis="y", which="both")
+    ax.legend(handles=[Line2D([0], [0], marker="s", lw=0, markerfacecolor=MODEL_COLORS.get(m, "C7"),
+                              markeredgecolor="k", markersize=8, label=_mlabel(m)) for m in models],
+              fontsize=8, loc="best")
+    return ax
+
+
+def ecdf(grid, function, configs, metric="mv", n_rep=10, ground_truth=True, logx=True, floor=1e-8,
+         ax=None):
+    """Empirical CDF of the final metric across seeds, for a chosen list of configs
+    [(model, acf, param), ...]. Reads as: 'what fraction of seeds achieved a metric <= x'.
+    A curve that rises FAR LEFT is typically better; a long flat tail on the right = occasional failures.
+    This separates 'usually great, sometimes fails' (RAHBO) from 'consistently mediocre' -- which the
+    mean cannot."""
+    import matplotlib.pyplot as plt
+    if ax is None:
+        _, ax = plt.subplots(figsize=(7.5, 5))
+    for i, (m, a, p) in enumerate(configs):
+        v = _seed_vals(grid, function, m, a, p, n_rep, metric, ground_truth)
+        if not len(v):
+            continue
+        v = np.sort(np.maximum(v, floor) if logx else np.sort(v))
+        y = np.arange(1, len(v) + 1) / len(v)
+        ls, mk = MODEL_STYLES.get(m, ("-", None))
+        ax.step(v, y, where="post", lw=2, ls=ls, color=ACQ_COLORS.get(a, f"C{i}"),
+                label=f"{_mlabel(m)} + {acquisitions.label(a, p)}  (med={np.median(v):.2g})")
+        ax.axvline(np.median(v), color=ACQ_COLORS.get(a, f"C{i}"), ls=":", lw=1, alpha=0.5)
+    if logx:
+        ax.set_xscale("log")
+    lab = {"regret": "final regret", "noise": "σ² at incumbent", "mv": "MV-regret"}[metric]
+    ax.set_xlabel(lab + " (log)"); ax.set_ylabel("fraction of seeds ≤ x")
+    ax.set_title(f"{function} — ECDF over seeds (n_rep={n_rep})\ndotted = median; left & steep = better",
+                 fontsize=10)
+    ax.grid(alpha=0.3, which="both"); ax.legend(fontsize=8, loc="lower right"); ax.set_ylim(0, 1.02)
+    return ax
+
+
+def head_to_head(grid, function, configs, metric="mv", n_rep=10, ground_truth=True):
+    """Mean vs MEDIAN + a rank test for a shortlist of configs -- so a skew-driven 'tie' on the mean
+    can't hide a real difference. Returns a DataFrame; also reports pairwise Mann-Whitney vs the row
+    with the best median."""
+    import pandas as pd
+    from scipy import stats
+    rows, vals = [], {}
+    for (m, a, p) in configs:
+        v = _seed_vals(grid, function, m, a, p, n_rep, metric, ground_truth)
+        if not len(v):
+            continue
+        key = f"{_mlabel(m)} + {acquisitions.label(a, p)}"
+        vals[key] = v
+        rows.append(dict(config=key, mean=v.mean(), median=float(np.median(v)),
+                         iqr=float(np.percentile(v, 75) - np.percentile(v, 25)),
+                         worst=v.max(), n=len(v)))
+    df = pd.DataFrame(rows).set_index("config").sort_values("median")
+    best = df.index[0]
+    df["p_vs_best_median"] = [
+        "—" if k == best else f"{stats.mannwhitneyu(vals[k], vals[best], alternative='greater').pvalue:.1e}"
+        for k in df.index]
+    return df.round(6)

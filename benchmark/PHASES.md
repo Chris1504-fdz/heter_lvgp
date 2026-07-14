@@ -1,0 +1,83 @@
+# Roadmap — remaining phases
+
+Living checklist. **Do these one at a time**, in order. Update the boxes as they land.
+
+Equations source: `resources/Mixed_Variable_Heteroscedastic_Test_Problems_Eng_Problems_v2.pdf`
+Budgets source:   `resources/init_doe_iter.xlsx` (rounded → `doe.PROBLEM_GRID`)
+
+---
+
+## Status
+
+| | problems | state |
+|---|---|---|
+| ✅ done | branin_hetero, sixhump_camel, griewank_2d, ackley_2d | 1 continuous + 1 categorical; swept, analysed |
+| ❌ todo | griewank_10d (9-D), ackley_10d (9-D), rastrigin_6d (5-D), golinski (6-D), piston (6-D), otl_circuit (5-D) | **stubs — equations not written, and the framework is 1-D only** |
+
+**6 of 10 problems remain** (not 5 of 9).
+
+---
+
+## ▶ PHASE 2a — generalize the framework to *d* continuous dimensions  ◀ CURRENT
+
+The blocker. The equations are *not* the hard part: every layer currently assumes exactly
+**1 continuous dim + 1 categorical** (`X = [x1, level]`, 2 columns).
+
+**Acceptance test (non-negotiable): the 4 existing 1-D problems must reproduce the CURRENT results
+BIT-EXACTLY.** The generalized code must reduce to the present code when d = 1. That is the whole
+validation strategy — we already have trusted results to regress against.
+
+To keep bit-exactness at d = 1, three things must reduce exactly:
+1. `make_doe_nd` must not consume extra RNG at d=1 (skip the per-dim shuffle) → identical DOE + noise.
+2. The d-dim acquisition optimizer must reduce to the current `linspace(256)` + L-BFGS-from-top-3 at d=1.
+3. The d-dim aleatoric polynomial must reduce to `[1, w, w²]` at d=1.
+
+### Checklist
+- [ ] `utils/doe.py` — `make_doe_nd`: skip the dim-shuffle when d==1 (bit-exact RNG at d=1).
+- [ ] `utils/problems.py` — `ProblemSpec`: vector `bounds` + `d` (geometry already in `doe.PROBLEM_GRID`);
+      `f(X, level)` / `sigma(X, level)` take `X` of shape (n, d); `initial_doe` → `make_doe_nd`.
+- [ ] `utils/doe_cache.py` — `X_sample` becomes (n, d+1) = `[x1..xd, level]` (already (n,2) at d=1).
+- [ ] `utils/bo.py` — per-level data holds `X` (n,d); `_minimize_1d` → `_minimize_nd`
+      (grid/Sobol + multi-start L-BFGS; must reduce exactly at d=1).
+- [ ] `utils/models/base.py` — aleatoric poly: degree-2 in *d* vars **with cross terms**
+      (match MATLAB `build_poly_features`); reduces to `[1,w,w²]` at d=1.
+- [ ] `utils/models/{separate_gp,categorical_kernel}.py` — accept (n, d) inputs.
+- [ ] `matlab/{heter,standard}_driver.m` — `ind_qual = d+1`, `X_range_continuous` is (2, d),
+      objective handle over `X(:,1:d)`.
+- [ ] `utils/results.py` — de-hardcode `reshape(-1, 2)` → (n, d+1); `f_true_level(x[:-1], level)`.
+- [ ] **REGRESSION**: re-run a set of 1-D cells and diff against the existing `results/` — must match
+      bit-for-bit (DOE, X_sampled, Y_sampled, trajectories).
+
+---
+
+## PHASE 2b — cost probe  (BEFORE committing to any multi-dim sweep)
+
+A crude O(n³) projection from the *measured* 475 s/cell (branin, heter_LVGP, 50 iters, n_tr 10→60):
+
+| problem | n_tr grows | iters | projected heter_LVGP |
+|---|---|---|---|
+| rastrigin_6d | 32 → 232 | 200 | **~29 h/cell** |
+| golinski | 30 → 230 | 200 | ~28 h/cell |
+| griewank_10d | 52 → 252 | 200 | **~40 h/cell** |
+
+At 1440 heter_LVGP cells/problem this is **not runnable**. **Measure one real multi-dim heter_LVGP cell
+before planning the sweep.** It may force fewer seeds/iterations, a subsampled grid, or a faster fit.
+
+---
+
+## PHASE 2c — the 6 equations (both engines)
+
+- [ ] Python `utils/problems.py` + MATLAB `matlab/problems.m` (⚠ `reshape(level_lookup, size(x1))` —
+      MATLAB `v(lv)` keeps v's row orientation and silently broadcasts to a matrix).
+- [ ] `verify_problems.py` — Python == MATLAB to ~1e-15 for all 10 (as done for the 1-D four).
+- [ ] ⚠ **rastrigin_6d** is special: per-level **centers** c(ℓ) shift the optimum *location*, not just noise.
+- [ ] Engineering problems (golinski / piston / otl_circuit) have **per-variable ranges** — already in
+      `doe.PROBLEM_GRID`.
+
+---
+
+## PHASE 3 — analysis gaps (noted, not blocking)
+- [ ] n_rep 3 vs 10 comparison (data exists; the "do more replicates help?" question is unasked).
+- [ ] Significance testing in the main tables (only `head_to_head` has it).
+- [ ] Cost-vs-benefit: heter_LVGP is ~20× slower than separate_gp — is it worth it?
+- [ ] `_panel`'s `label=` is commented out → convergence panels render without legends.

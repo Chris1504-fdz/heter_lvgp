@@ -33,3 +33,6 @@ STATUS.md
 # plots_study/
 # *.csv
 benchmark/notebooks/plots/
+benchmark/latex/*.aux
+benchmark/latex/*.log
+benchmark/latex/*.out
