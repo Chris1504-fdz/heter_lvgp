@@ -18,25 +18,36 @@ from . import doe as _doe                                # SLHD / space-filling 
 
 @dataclass
 class ProblemSpec:
-    """One mixed-variable test problem.
-      f     : f(x1_array, level_1based) -> noise-free objective (numpy in/out)
-      sigma : sigma(x1_array, level_1based) -> heteroscedastic noise std
-      lb,ub : continuous domain of x1
+    """One mixed-variable test problem: d CONTINUOUS dims + 1 categorical.
+      f     : f(X, level_1based) -> noise-free objective;  X has shape (n, d), returns (n,)
+      sigma : sigma(X, level_1based) -> heteroscedastic noise std, same shapes
+      bounds: [(lb, ub)] per continuous dim.  For a 1-D problem you may pass scalar lb/ub instead.
       n_levels : number of categorical levels (1-based 1..n_levels)
       n_init : TOTAL initial design points (all levels);  num_iter : BO iterations
-    n_init/num_iter default to this problem's row of doe.PROBLEM_GRID (= resources/init_doe_iter.xlsx)."""
+    n_init/num_iter default to this problem's row of doe.PROBLEM_GRID (= resources/init_doe_iter.xlsx).
+
+    `lb`/`ub` remain as scalars for the 1-D problems (and are derived from bounds[0] otherwise), so
+    every existing d=1 call site keeps working unchanged."""
     name: str
     f: Callable
     sigma: Callable
-    lb: float
-    ub: float
-    n_levels: int
+    lb: float = None                                 # 1-D convenience (or derived from bounds[0])
+    ub: float = None
+    n_levels: int = 0
     n_init: int = 0                                  # 0 -> take from PROBLEM_GRID
     num_iter: int = 0                                # 0 -> take from PROBLEM_GRID
+    bounds: object = None                            # [(lb,ub)] per dim; None -> [(lb, ub)] (d=1)
     edge_buf: float = 1.0 / 6.0
     meta: dict = field(default_factory=dict)         # optional: cat_values, noise_muls, notes
 
     def __post_init__(self):
+        if self.bounds is None:
+            if self.lb is None or self.ub is None:
+                raise ValueError(f"{self.name}: give bounds=[(lb,ub),...] or scalar lb/ub")
+            self.bounds = [(float(self.lb), float(self.ub))]
+        self.bounds = np.atleast_2d(np.asarray(self.bounds, float))     # (d, 2)
+        if self.lb is None:                          # keep the 1-D convenience fields consistent
+            self.lb, self.ub = float(self.bounds[0, 0]), float(self.bounds[0, 1])
         g = _doe.PROBLEM_GRID.get(self.name)
         if not self.n_init:
             self.n_init = g.n_init if g else 2 * self.n_levels
@@ -44,16 +55,31 @@ class ProblemSpec:
             self.num_iter = g.num_iter if g else 50
 
     @property
+    def d(self):
+        """Number of CONTINUOUS dimensions."""
+        return int(self.bounds.shape[0])
+
+    @property
     def n_tr_lv(self):
         """Design points per level (floor). `n_init % n_levels` levels get one extra -- see doe.make_doe."""
         return self.n_init // self.n_levels
 
-    # convenience
-    def f_true_level(self, x1, level):
-        return np.asarray(self.f(np.asarray(x1, float), int(level)), float)
+    def _farg(self, X):
+        """Argument actually passed to f/sigma.
+        d==1: `np.asarray(X)` UNCHANGED -- byte-for-byte the original 1-D behaviour (0-d for a scalar,
+              (n,) for an array), so the existing f/sigma stay untouched and bit-identical.
+        d>1 : the full (n, d) array; a single 1-D point is promoted to (1, d)."""
+        X = np.asarray(X, float)
+        if self.d == 1:
+            return X                                   # exactly what the old f_true_level passed
+        return X.reshape(1, self.d) if X.ndim == 1 else X.reshape(-1, self.d)
 
-    def sigma_level(self, x1, level):
-        return np.asarray(self.sigma(np.asarray(x1, float), int(level)), float)
+    # convenience
+    def f_true_level(self, X, level):
+        return np.asarray(self.f(self._farg(X), int(level)), float)
+
+    def sigma_level(self, X, level):
+        return np.asarray(self.sigma(self._farg(X), int(level)), float)
 
     @property
     def levels(self):

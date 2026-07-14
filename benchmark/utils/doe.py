@@ -128,7 +128,11 @@ def make_doe_nd(mode, rng, bounds, n_lv, n_tr_lv=None, n_init=None):
     independently to decorrelate them (a proper d-dim LHS per slice).
 
     With a remainder (n_init not a multiple of n_lv) the levels receiving the extra point are drawn
-    ONCE and shared by every dim -- otherwise the per-dim columns would have mismatched lengths."""
+    ONCE and shared by every dim -- otherwise the per-dim columns would have mismatched lengths.
+
+    d == 1 REDUCES EXACTLY to make_doe: the per-dim shuffle (which only decorrelates dims against each
+    other, and is a no-op on a single column) is SKIPPED so it consumes no RNG. That keeps the 1-D DOE
+    -- and every noise draw that follows it from the same rng -- bit-identical to the pre-d-dim code."""
     bounds = np.atleast_2d(np.asarray(bounds, float))
     d = bounds.shape[0]
     N = n_lv * n_tr_lv if n_init is None else int(n_init)
@@ -140,7 +144,8 @@ def make_doe_nd(mode, rng, bounds, n_lv, n_tr_lv=None, n_init=None):
         cols = []
         for j in range(d):
             v = np.asarray(per_dim[j][lv], float).copy()
-            rng.shuffle(v)                          # decorrelate dims within the slice
+            if d > 1:
+                rng.shuffle(v)                      # decorrelate dims within the slice (no-op at d=1)
             cols.append(v)
         out[lv] = np.column_stack(cols)             # (m_lv, d)
     return out
