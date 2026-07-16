@@ -34,6 +34,18 @@ MODELS = {
 }
 
 
+# Optional: pytorch LVGP via the lvgp-bayes package. Guarded so engines without the package
+# (or a worker respawn mid-sweep) still load the 4 core models unchanged.
+try:
+    from .lvgp_torch import LVGPTorch, HeterLVGPTorch
+    MODELS["lvgp_torch"] = ModelInfo("lvgp_torch", "python", BLIND, cls=LVGPTorch,
+                                     label="LVGP (torch)")
+    MODELS["heter_lvgp_torch"] = ModelInfo("heter_lvgp_torch", "python", FULL,
+                                           cls=HeterLVGPTorch, label="Hetero LVGP (torch)")
+except ImportError:
+    pass
+
+
 def get(name) -> ModelInfo:
     if name not in MODELS:
         raise KeyError(f"unknown model '{name}'. available: {list(MODELS)}")

@@ -46,10 +46,16 @@ XVFB_LIBDIR = "/data/zhq7531/envs/xvfblib/lib"
 MATLAB_DRIVER = {"standard_LVGP": "standard_driver", "heter_LVGP": "heter_driver"}
 N_REP_LIST = [3, 10]
 LAUNCH_GAP_S = 8.0            # min seconds between MATLAB launches (MSH-safe)
-# Kill+retry a MATLAB hung in license checkout. Sized against the MEASURED cost of one cell at the
-# real budget (heter_LVGP 475 s, standard_LVGP 422 s at 50 iters, standalone); these inflate several-
-# fold under 18-way CPU contention, and Phase-2's 200 iterations exceed the old 1800 s outright.
-RUN_TIMEOUT_S = 5400
+# Kill+retry a MATLAB hung in license checkout. Timeout is PER-PROBLEM: measured heter cells run
+# ~3-5 h at d<=6 but ~32 h at d=9 under full contention (9-dim hyperopt + 20k-candidate search
+# dominate). A flat 8 h would kill every 10-D heter cell mid-run and burn days in retries.
+RUN_TIMEOUT_S = 16 * 3600                    # d <= 6 problems; hang guard, NOT a scheduler --
+                                             # golinski heter ~4.8h solo stretches to 6-8h under
+                                             # multi-user contention, so 8h was killing live cells
+
+
+def matlab_timeout(function):
+    return RUN_TIMEOUT_S if P.get(function).d < 9 else 72 * 3600   # 10-D: 32h solo x contention
 
 
 def start_shared_xvfb():
@@ -173,7 +179,7 @@ def _run_matlab(function, model, acf, param, n_rep, seed, num_iter, out, log):
         try:
             with open(log, "w") as fh:
                 rc = subprocess.run(cmd, cwd=os.path.join(HERE, "matlab"), env=env, stdout=fh,
-                                    stderr=subprocess.STDOUT, timeout=RUN_TIMEOUT_S).returncode
+                                    stderr=subprocess.STDOUT, timeout=matlab_timeout(function)).returncode
         except subprocess.TimeoutExpired:
             rc, timed_out = -9, True
         finally:
@@ -317,6 +323,20 @@ def main():
     else:
         acqs_cfg = [(a, p) for (a, p) in acquisitions.CONFIG_ORDER if a in args.acqs]
         grid = build_grid(functions, args.models, acqs_cfg, args.seeds, args.num_iter)
+
+    # Schedule SEED-FIRST, most expensive model first within each seed wave:
+    #  - seed-first  -> every (problem, seed) is completed across ALL models early, so PAIRED
+    #    model comparisons (shared-DOE CRN) are possible wave by wave instead of at the very end;
+    #  - cost-descending (LPT) within a wave -> long heter cells start early, shrinking the
+    #    end-of-sweep straggler tail. Same cells, same parallelism: zero throughput cost.
+    # Queue order (owner's comparison workflow):
+    #   1. non-10-D problems before the 10-D block (10-D heter measured ~32 h/cell vs ~5 h at d<=6);
+    #   2. ALL nrep=10 before ALL nrep=3 (the 10-replicate comparison is the primary one);
+    #   3. PROBLEM-MAJOR within a pass: finish one problem completely -- python models first
+    #      (separate_gp, categorical_kernel), then standard_LVGP, then heter_LVGP -- so each
+    #      problem's full 4-model comparison lands as a complete unit before the next begins.
+    _RANK = {"separate_gp": 0, "categorical_kernel": 1, "standard_LVGP": 2, "heter_LVGP": 3}
+    grid.sort(key=lambda c: (P.get(c[0]).d >= 9, c[4] != 10, c[0], _RANK.get(c[1], 9), c[5]))
 
     if args.verify:
         c = report_manifest(grid)

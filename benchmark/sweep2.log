@@ -1,0 +1,410 @@
+2100 cells | functions ['branin_hetero', 'sixhump_camel', 'griewank_2d', 'ackley_2d', 'griewank_10d', 'ackley_10d', 'rastrigin_6d', 'golinski', 'piston', 'otl_circuit'] | models ['separate_gp', 'categorical_kernel', 'standard_LVGP', 'heter_LVGP'] | 24 workers | matlab=True
+initial designs ready: 100 (function, seed, n_rep) combinations
+shared Xvfb on :97 (pid 2687111)
+[1/2100] ackley_2d/heter_LVGP/haei_g0.5/nrep03/seed01: skip(exists)
+[2/2100] branin_hetero/heter_LVGP/lcb/nrep03/seed01: skip(exists)
+[3/2100] ackley_2d/heter_LVGP/ei/nrep10/seed01: skip(exists)
+[4/2100] ackley_2d/heter_LVGP/anpei_b0.8/nrep10/seed01: skip(exists)
+[5/2100] ackley_2d/heter_LVGP/lcb/nrep03/seed01: skip(exists)
+[6/2100] ackley_2d/heter_LVGP/lcb/nrep10/seed01: skip(exists)
+[7/2100] ackley_2d/heter_LVGP/pi/nrep03/seed01: skip(exists)
+[8/2100] ackley_2d/heter_LVGP/haei_g0.5/nrep10/seed01: skip(exists)
+[9/2100] ackley_2d/heter_LVGP/pi/nrep10/seed01: skip(exists)
+[10/2100] ackley_2d/heter_LVGP/ei/nrep03/seed01: skip(exists)
+[11/2100] ackley_2d/heter_LVGP/anpei_b0.8/nrep03/seed01: skip(exists)
+[12/2100] ackley_2d/heter_LVGP/rahbo_a0.5/nrep03/seed01: skip(exists)
+[13/2100] ackley_2d/heter_LVGP/rahbo_a0.5/nrep10/seed01: skip(exists)
+[14/2100] branin_hetero/heter_LVGP/anpei_b0.8/nrep10/seed01: skip(exists)
+[15/2100] branin_hetero/heter_LVGP/lcb/nrep10/seed01: skip(exists)
+[16/2100] branin_hetero/heter_LVGP/ei/nrep03/seed01: skip(exists)
+[17/2100] branin_hetero/heter_LVGP/ei/nrep10/seed01: skip(exists)
+[18/2100] branin_hetero/heter_LVGP/pi/nrep03/seed01: skip(exists)
+[19/2100] branin_hetero/heter_LVGP/pi/nrep10/seed01: skip(exists)
+[20/2100] branin_hetero/heter_LVGP/haei_g0.5/nrep03/seed01: skip(exists)
+[21/2100] branin_hetero/heter_LVGP/anpei_b0.8/nrep03/seed01: skip(exists)
+[22/2100] branin_hetero/heter_LVGP/haei_g0.5/nrep10/seed01: skip(exists)
+[23/2100] branin_hetero/heter_LVGP/rahbo_a0.5/nrep03/seed01: skip(exists)
+[24/2100] branin_hetero/heter_LVGP/rahbo_a0.5/nrep10/seed01: skip(exists)
+2100 cells | functions ['branin_hetero', 'sixhump_camel', 'griewank_2d', 'ackley_2d', 'griewank_10d', 'ackley_10d', 'rastrigin_6d', 'golinski', 'piston', 'otl_circuit'] | models ['separate_gp', 'categorical_kernel', 'standard_LVGP', 'heter_LVGP'] | 24 workers | matlab=True
+initial designs ready: 100 (function, seed, n_rep) combinations
+shared Xvfb on :97 (pid 2876255)
+[1/2100] ackley_2d/separate_gp/anpei_b0.8/nrep10/seed01: skip(exists)
+[2/2100] ackley_2d/separate_gp/lcb/nrep10/seed01: skip(exists)
+[3/2100] ackley_2d/separate_gp/lcb/nrep03/seed01: skip(exists)
+[4/2100] ackley_2d/separate_gp/pi/nrep10/seed01: skip(exists)
+[5/2100] ackley_2d/separate_gp/pi/nrep03/seed01: skip(exists)
+[6/2100] ackley_2d/separate_gp/ei/nrep03/seed01: skip(exists)
+[7/2100] ackley_2d/separate_gp/haei_g0.5/nrep10/seed01: skip(exists)
+[8/2100] ackley_2d/separate_gp/haei_g0.5/nrep03/seed01: skip(exists)
+[9/2100] ackley_2d/separate_gp/rahbo_a0.5/nrep03/seed01: skip(exists)
+[10/2100] ackley_2d/separate_gp/ei/nrep10/seed01: skip(exists)
+[11/2100] ackley_2d/separate_gp/anpei_b0.8/nrep03/seed01: skip(exists)
+[12/2100] ackley_2d/separate_gp/rahbo_a0.5/nrep10/seed01: skip(exists)
+[13/2100] branin_hetero/separate_gp/lcb/nrep10/seed01: skip(exists)
+[14/2100] branin_hetero/separate_gp/lcb/nrep03/seed01: skip(exists)
+[15/2100] branin_hetero/separate_gp/pi/nrep03/seed01: skip(exists)
+[16/2100] branin_hetero/separate_gp/pi/nrep10/seed01: skip(exists)
+[17/2100] branin_hetero/separate_gp/ei/nrep03/seed01: skip(exists)
+[18/2100] branin_hetero/separate_gp/haei_g0.5/nrep03/seed01: skip(exists)
+[19/2100] branin_hetero/separate_gp/rahbo_a0.5/nrep03/seed01: skip(exists)
+[20/2100] branin_hetero/separate_gp/ei/nrep10/seed01: skip(exists)
+[21/2100] branin_hetero/separate_gp/haei_g0.5/nrep10/seed01: skip(exists)
+[22/2100] branin_hetero/separate_gp/anpei_b0.8/nrep03/seed01: skip(exists)
+[23/2100] branin_hetero/separate_gp/rahbo_a0.5/nrep10/seed01: skip(exists)
+[24/2100] branin_hetero/separate_gp/anpei_b0.8/nrep10/seed01: skip(exists)
+[25/2100] griewank_2d/separate_gp/lcb/nrep10/seed01: skip(exists)
+[26/2100] griewank_2d/separate_gp/lcb/nrep03/seed01: skip(exists)
+[27/2100] griewank_2d/separate_gp/pi/nrep03/seed01: skip(exists)
+[28/2100] griewank_2d/separate_gp/pi/nrep10/seed01: skip(exists)
+[29/2100] griewank_2d/separate_gp/ei/nrep03/seed01: skip(exists)
+[30/2100] griewank_2d/separate_gp/ei/nrep10/seed01: skip(exists)
+[31/2100] griewank_2d/separate_gp/anpei_b0.8/nrep03/seed01: skip(exists)
+[32/2100] griewank_2d/separate_gp/rahbo_a0.5/nrep10/seed01: skip(exists)
+[33/2100] griewank_2d/separate_gp/haei_g0.5/nrep03/seed01: skip(exists)
+[34/2100] griewank_2d/separate_gp/haei_g0.5/nrep10/seed01: skip(exists)
+[35/2100] griewank_2d/separate_gp/rahbo_a0.5/nrep03/seed01: skip(exists)
+[36/2100] griewank_2d/separate_gp/anpei_b0.8/nrep10/seed01: skip(exists)
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/likelihoods/noise_models.py:150: NumericalWarning: Very small noise values detected. This will likely lead to numerical instabilities. Rounding small noise values up to 1e-06.
+  warnings.warn(
+2100 cells | functions ['branin_hetero', 'sixhump_camel', 'griewank_2d', 'ackley_2d', 'griewank_10d', 'ackley_10d', 'rastrigin_6d', 'golinski', 'piston', 'otl_circuit'] | models ['separate_gp', 'categorical_kernel', 'standard_LVGP', 'heter_LVGP'] | 24 workers | matlab=True
+initial designs ready: 100 (function, seed, n_rep) combinations
+shared Xvfb on :97 (pid 2880110)
+[1/2100] ackley_2d/separate_gp/lcb/nrep10/seed01: skip(exists)
+[2/2100] ackley_2d/separate_gp/pi/nrep10/seed01: skip(exists)
+[3/2100] ackley_2d/separate_gp/ei/nrep10/seed01: skip(exists)
+[4/2100] ackley_2d/separate_gp/haei_g0.5/nrep10/seed01: skip(exists)
+[5/2100] ackley_2d/separate_gp/lcb/nrep10/seed05: skip(exists)
+[6/2100] ackley_2d/separate_gp/anpei_b0.8/nrep10/seed01: skip(exists)
+[7/2100] ackley_2d/separate_gp/pi/nrep10/seed05: skip(exists)
+[8/2100] ackley_2d/separate_gp/rahbo_a0.5/nrep10/seed01: skip(exists)
+[9/2100] ackley_2d/separate_gp/pi/nrep10/seed02: skip(exists)
+[10/2100] ackley_2d/separate_gp/lcb/nrep10/seed02: skip(exists)
+[11/2100] ackley_2d/separate_gp/ei/nrep10/seed03: skip(exists)
+[12/2100] ackley_2d/separate_gp/ei/nrep10/seed02: skip(exists)
+[13/2100] ackley_2d/separate_gp/anpei_b0.8/nrep10/seed02: skip(exists)
+[14/2100] ackley_2d/separate_gp/rahbo_a0.5/nrep10/seed02: skip(exists)
+[15/2100] ackley_2d/separate_gp/lcb/nrep10/seed03: skip(exists)
+[16/2100] ackley_2d/separate_gp/haei_g0.5/nrep10/seed02: skip(exists)
+[17/2100] ackley_2d/separate_gp/rahbo_a0.5/nrep10/seed03: skip(exists)
+[18/2100] ackley_2d/separate_gp/ei/nrep10/seed04: skip(exists)
+[19/2100] ackley_2d/separate_gp/pi/nrep10/seed03: skip(exists)
+[20/2100] ackley_2d/separate_gp/lcb/nrep10/seed04: skip(exists)
+[21/2100] ackley_2d/separate_gp/haei_g0.5/nrep10/seed03: skip(exists)
+[22/2100] ackley_2d/separate_gp/anpei_b0.8/nrep10/seed03: skip(exists)
+[23/2100] ackley_2d/separate_gp/haei_g0.5/nrep10/seed04: skip(exists)
+[24/2100] ackley_2d/separate_gp/anpei_b0.8/nrep10/seed04: skip(exists)
+[25/2100] ackley_2d/separate_gp/pi/nrep10/seed04: skip(exists)
+[26/2100] ackley_2d/separate_gp/rahbo_a0.5/nrep10/seed04: skip(exists)
+[27/2100] ackley_2d/separate_gp/anpei_b0.8/nrep10/seed05: skip(exists)
+[28/2100] ackley_2d/separate_gp/ei/nrep10/seed05: skip(exists)
+[29/2100] ackley_2d/separate_gp/haei_g0.5/nrep10/seed05: skip(exists)
+[30/2100] ackley_2d/categorical_kernel/pi/nrep10/seed02: skip(exists)
+[31/2100] ackley_2d/categorical_kernel/pi/nrep10/seed01: skip(exists)
+[32/2100] ackley_2d/categorical_kernel/ei/nrep10/seed01: skip(exists)
+[33/2100] ackley_2d/categorical_kernel/haei_g0.5/nrep10/seed01: skip(exists)
+[34/2100] ackley_2d/categorical_kernel/anpei_b0.8/nrep10/seed01: skip(exists)
+[35/2100] ackley_2d/categorical_kernel/lcb/nrep10/seed02: skip(exists)
+[36/2100] ackley_2d/categorical_kernel/lcb/nrep10/seed01: skip(exists)
+[37/2100] ackley_2d/separate_gp/rahbo_a0.5/nrep10/seed05: skip(exists)
+[38/2100] ackley_2d/categorical_kernel/ei/nrep10/seed02: skip(exists)
+[39/2100] ackley_2d/categorical_kernel/rahbo_a0.5/nrep10/seed01: skip(exists)
+[40/2100] ackley_2d/categorical_kernel/haei_g0.5/nrep10/seed02: skip(exists)
+[41/2100] ackley_2d/categorical_kernel/anpei_b0.8/nrep10/seed02: skip(exists)
+[42/2100] ackley_2d/categorical_kernel/pi/nrep10/seed03: skip(exists)
+[43/2100] ackley_2d/categorical_kernel/rahbo_a0.5/nrep10/seed02: skip(exists)
+[44/2100] ackley_2d/categorical_kernel/lcb/nrep10/seed03: skip(exists)
+[45/2100] ackley_2d/categorical_kernel/ei/nrep10/seed03: skip(exists)
+[46/2100] ackley_2d/categorical_kernel/anpei_b0.8/nrep10/seed03: skip(exists)
+[47/2100] ackley_2d/categorical_kernel/haei_g0.5/nrep10/seed03: skip(exists)
+[48/2100] ackley_2d/categorical_kernel/rahbo_a0.5/nrep10/seed03: skip(exists)
+[49/2100] ackley_2d/categorical_kernel/lcb/nrep10/seed04: skip(exists)
+[50/2100] ackley_2d/categorical_kernel/pi/nrep10/seed04: skip(exists)
+[51/2100] ackley_2d/categorical_kernel/rahbo_a0.5/nrep10/seed04: skip(exists)
+[52/2100] ackley_2d/categorical_kernel/ei/nrep10/seed04: skip(exists)
+[53/2100] ackley_2d/categorical_kernel/anpei_b0.8/nrep10/seed04: skip(exists)
+[54/2100] ackley_2d/categorical_kernel/haei_g0.5/nrep10/seed04: skip(exists)
+[55/2100] ackley_2d/categorical_kernel/pi/nrep10/seed05: skip(exists)
+[56/2100] ackley_2d/categorical_kernel/ei/nrep10/seed05: skip(exists)
+[57/2100] ackley_2d/categorical_kernel/lcb/nrep10/seed05: skip(exists)
+[58/2100] ackley_2d/categorical_kernel/haei_g0.5/nrep10/seed05: skip(exists)
+[59/2100] ackley_2d/categorical_kernel/anpei_b0.8/nrep10/seed05: skip(exists)
+[60/2100] ackley_2d/standard_LVGP/pi/nrep10/seed01: skip(exists)
+[61/2100] ackley_2d/categorical_kernel/rahbo_a0.5/nrep10/seed05: skip(exists)
+[62/2100] ackley_2d/standard_LVGP/ei/nrep10/seed02: skip(exists)
+[63/2100] ackley_2d/standard_LVGP/lcb/nrep10/seed02: skip(exists)
+[64/2100] ackley_2d/standard_LVGP/lcb/nrep10/seed01: skip(exists)
+[65/2100] ackley_2d/standard_LVGP/ei/nrep10/seed01: skip(exists)
+[66/2100] ackley_2d/standard_LVGP/pi/nrep10/seed02: skip(exists)
+[67/2100] ackley_2d/standard_LVGP/pi/nrep10/seed03: skip(exists)
+[68/2100] ackley_2d/standard_LVGP/lcb/nrep10/seed03: skip(exists)
+[69/2100] ackley_2d/standard_LVGP/ei/nrep10/seed05: skip(exists)
+[70/2100] ackley_2d/standard_LVGP/lcb/nrep10/seed04: skip(exists)
+[71/2100] ackley_2d/heter_LVGP/anpei_b0.8/nrep10/seed02: skip(exists)
+[72/2100] ackley_2d/heter_LVGP/lcb/nrep10/seed01: skip(exists)
+[73/2100] ackley_2d/standard_LVGP/ei/nrep10/seed03: skip(exists)
+[74/2100] ackley_2d/heter_LVGP/rahbo_a0.5/nrep10/seed02: skip(exists)
+[75/2100] ackley_2d/standard_LVGP/pi/nrep10/seed04: skip(exists)
+[76/2100] ackley_2d/heter_LVGP/rahbo_a0.5/nrep10/seed03: skip(exists)
+[77/2100] ackley_2d/heter_LVGP/pi/nrep10/seed04: skip(exists)
+[78/2100] ackley_2d/heter_LVGP/ei/nrep10/seed04: skip(exists)
+[79/2100] ackley_2d/heter_LVGP/haei_g0.5/nrep10/seed03: skip(exists)
+[80/2100] ackley_2d/heter_LVGP/pi/nrep10/seed03: skip(exists)
+[81/2100] ackley_2d/standard_LVGP/ei/nrep10/seed04: skip(exists)
+[82/2100] ackley_2d/heter_LVGP/lcb/nrep10/seed02: skip(exists)
+[83/2100] ackley_2d/heter_LVGP/lcb/nrep10/seed03: skip(exists)
+[84/2100] ackley_2d/heter_LVGP/ei/nrep10/seed02: skip(exists)
+[85/2100] ackley_2d/standard_LVGP/lcb/nrep10/seed05: skip(exists)
+[86/2100] ackley_2d/heter_LVGP/ei/nrep10/seed03: skip(exists)
+[87/2100] ackley_2d/heter_LVGP/haei_g0.5/nrep10/seed02: skip(exists)
+[88/2100] ackley_2d/heter_LVGP/lcb/nrep10/seed04: skip(exists)
+[89/2100] ackley_2d/heter_LVGP/lcb/nrep10/seed05: skip(exists)
+[90/2100] ackley_2d/heter_LVGP/rahbo_a0.5/nrep10/seed01: skip(exists)
+[91/2100] ackley_2d/heter_LVGP/ei/nrep10/seed05: skip(exists)
+[92/2100] ackley_2d/heter_LVGP/anpei_b0.8/nrep10/seed03: skip(exists)
+[93/2100] ackley_2d/heter_LVGP/pi/nrep10/seed05: skip(exists)
+[94/2100] ackley_2d/standard_LVGP/pi/nrep10/seed05: skip(exists)
+[95/2100] ackley_2d/heter_LVGP/ei/nrep10/seed01: skip(exists)
+[96/2100] ackley_2d/heter_LVGP/pi/nrep10/seed01: skip(exists)
+[97/2100] ackley_2d/heter_LVGP/haei_g0.5/nrep10/seed01: skip(exists)
+[98/2100] ackley_2d/heter_LVGP/anpei_b0.8/nrep10/seed01: skip(exists)
+[99/2100] ackley_2d/heter_LVGP/pi/nrep10/seed02: skip(exists)
+[100/2100] ackley_2d/heter_LVGP/haei_g0.5/nrep10/seed04: skip(exists)
+[101/2100] ackley_2d/heter_LVGP/anpei_b0.8/nrep10/seed04: skip(exists)
+[102/2100] ackley_2d/heter_LVGP/haei_g0.5/nrep10/seed05: skip(exists)
+[103/2100] branin_hetero/separate_gp/lcb/nrep10/seed01: skip(exists)
+[104/2100] branin_hetero/separate_gp/rahbo_a0.5/nrep10/seed01: skip(exists)
+[105/2100] ackley_2d/heter_LVGP/anpei_b0.8/nrep10/seed05: skip(exists)
+[106/2100] ackley_2d/heter_LVGP/rahbo_a0.5/nrep10/seed04: skip(exists)
+[107/2100] branin_hetero/separate_gp/anpei_b0.8/nrep10/seed01: skip(exists)
+[108/2100] branin_hetero/separate_gp/haei_g0.5/nrep10/seed01: skip(exists)
+[109/2100] branin_hetero/separate_gp/pi/nrep10/seed02: skip(exists)
+[110/2100] ackley_2d/heter_LVGP/rahbo_a0.5/nrep10/seed05: skip(exists)
+[111/2100] branin_hetero/separate_gp/pi/nrep10/seed01: skip(exists)
+[112/2100] branin_hetero/separate_gp/ei/nrep10/seed01: skip(exists)
+[113/2100] branin_hetero/separate_gp/lcb/nrep10/seed02: skip(exists)
+[114/2100] branin_hetero/separate_gp/haei_g0.5/nrep10/seed02: skip(exists)
+[115/2100] branin_hetero/separate_gp/ei/nrep10/seed02: skip(exists)
+[116/2100] branin_hetero/separate_gp/rahbo_a0.5/nrep10/seed02: skip(exists)
+[117/2100] branin_hetero/separate_gp/anpei_b0.8/nrep10/seed02: skip(exists)
+[118/2100] branin_hetero/separate_gp/lcb/nrep10/seed03: skip(exists)
+[119/2100] branin_hetero/separate_gp/pi/nrep10/seed03: skip(exists)
+[120/2100] branin_hetero/separate_gp/ei/nrep10/seed03: skip(exists)
+[121/2100] branin_hetero/separate_gp/haei_g0.5/nrep10/seed03: skip(exists)
+[122/2100] branin_hetero/separate_gp/anpei_b0.8/nrep10/seed03: skip(exists)
+[123/2100] branin_hetero/separate_gp/lcb/nrep10/seed04: skip(exists)
+[124/2100] branin_hetero/separate_gp/rahbo_a0.5/nrep10/seed03: skip(exists)
+[125/2100] branin_hetero/separate_gp/ei/nrep10/seed04: skip(exists)
+[126/2100] branin_hetero/separate_gp/lcb/nrep10/seed05: skip(exists)
+[127/2100] branin_hetero/separate_gp/pi/nrep10/seed04: skip(exists)
+[128/2100] branin_hetero/separate_gp/rahbo_a0.5/nrep10/seed04: skip(exists)
+[129/2100] branin_hetero/separate_gp/anpei_b0.8/nrep10/seed04: skip(exists)
+[130/2100] branin_hetero/separate_gp/pi/nrep10/seed05: skip(exists)
+[131/2100] branin_hetero/separate_gp/haei_g0.5/nrep10/seed04: skip(exists)
+[132/2100] branin_hetero/separate_gp/haei_g0.5/nrep10/seed05: skip(exists)
+[133/2100] branin_hetero/separate_gp/anpei_b0.8/nrep10/seed05: skip(exists)
+[134/2100] branin_hetero/separate_gp/ei/nrep10/seed05: skip(exists)
+[135/2100] branin_hetero/separate_gp/rahbo_a0.5/nrep10/seed05: skip(exists)
+[136/2100] branin_hetero/categorical_kernel/pi/nrep10/seed01: skip(exists)
+[137/2100] branin_hetero/categorical_kernel/lcb/nrep10/seed01: skip(exists)
+[138/2100] branin_hetero/categorical_kernel/ei/nrep10/seed01: skip(exists)
+[139/2100] branin_hetero/categorical_kernel/haei_g0.5/nrep10/seed01: skip(exists)
+[140/2100] branin_hetero/categorical_kernel/rahbo_a0.5/nrep10/seed01: skip(exists)
+[141/2100] branin_hetero/categorical_kernel/anpei_b0.8/nrep10/seed01: skip(exists)
+[142/2100] branin_hetero/categorical_kernel/pi/nrep10/seed02: skip(exists)
+[143/2100] branin_hetero/categorical_kernel/lcb/nrep10/seed02: skip(exists)
+[144/2100] branin_hetero/categorical_kernel/ei/nrep10/seed02: skip(exists)
+[145/2100] branin_hetero/categorical_kernel/haei_g0.5/nrep10/seed02: skip(exists)
+[146/2100] branin_hetero/categorical_kernel/anpei_b0.8/nrep10/seed02: skip(exists)
+[147/2100] branin_hetero/categorical_kernel/ei/nrep10/seed03: skip(exists)
+[148/2100] branin_hetero/categorical_kernel/rahbo_a0.5/nrep10/seed02: skip(exists)
+[149/2100] branin_hetero/categorical_kernel/lcb/nrep10/seed03: skip(exists)
+[150/2100] branin_hetero/categorical_kernel/pi/nrep10/seed03: skip(exists)
+[151/2100] branin_hetero/categorical_kernel/anpei_b0.8/nrep10/seed03: skip(exists)
+[152/2100] branin_hetero/categorical_kernel/haei_g0.5/nrep10/seed03: skip(exists)
+[153/2100] branin_hetero/categorical_kernel/rahbo_a0.5/nrep10/seed03: skip(exists)
+[154/2100] branin_hetero/categorical_kernel/ei/nrep10/seed04: skip(exists)
+[155/2100] branin_hetero/categorical_kernel/lcb/nrep10/seed04: skip(exists)
+[156/2100] branin_hetero/categorical_kernel/pi/nrep10/seed04: skip(exists)
+[157/2100] branin_hetero/categorical_kernel/rahbo_a0.5/nrep10/seed04: skip(exists)
+[158/2100] branin_hetero/categorical_kernel/lcb/nrep10/seed05: skip(exists)
+[159/2100] branin_hetero/categorical_kernel/haei_g0.5/nrep10/seed04: skip(exists)
+[160/2100] branin_hetero/categorical_kernel/anpei_b0.8/nrep10/seed04: skip(exists)
+[161/2100] branin_hetero/categorical_kernel/pi/nrep10/seed05: skip(exists)
+[162/2100] branin_hetero/categorical_kernel/ei/nrep10/seed05: skip(exists)
+[163/2100] branin_hetero/categorical_kernel/haei_g0.5/nrep10/seed05: skip(exists)
+[164/2100] branin_hetero/categorical_kernel/rahbo_a0.5/nrep10/seed05: skip(exists)
+[165/2100] branin_hetero/standard_LVGP/lcb/nrep10/seed01: skip(exists)
+[166/2100] branin_hetero/categorical_kernel/anpei_b0.8/nrep10/seed05: skip(exists)
+[167/2100] branin_hetero/standard_LVGP/pi/nrep10/seed01: skip(exists)
+[168/2100] branin_hetero/standard_LVGP/ei/nrep10/seed01: skip(exists)
+[169/2100] branin_hetero/standard_LVGP/ei/nrep10/seed02: skip(exists)
+[170/2100] branin_hetero/standard_LVGP/lcb/nrep10/seed02: skip(exists)
+[171/2100] branin_hetero/standard_LVGP/lcb/nrep10/seed04: skip(exists)
+[172/2100] branin_hetero/standard_LVGP/lcb/nrep10/seed05: skip(exists)
+[173/2100] branin_hetero/standard_LVGP/pi/nrep10/seed02: skip(exists)
+[174/2100] branin_hetero/standard_LVGP/lcb/nrep10/seed03: skip(exists)
+[175/2100] branin_hetero/standard_LVGP/ei/nrep10/seed03: skip(exists)
+[176/2100] branin_hetero/heter_LVGP/pi/nrep10/seed01: skip(exists)
+[177/2100] branin_hetero/heter_LVGP/lcb/nrep10/seed01: skip(exists)
+[178/2100] branin_hetero/standard_LVGP/pi/nrep10/seed03: skip(exists)
+[179/2100] branin_hetero/standard_LVGP/ei/nrep10/seed05: skip(exists)
+[180/2100] branin_hetero/heter_LVGP/ei/nrep10/seed02: skip(exists)
+[181/2100] branin_hetero/heter_LVGP/haei_g0.5/nrep10/seed01: skip(exists)
+[182/2100] branin_hetero/standard_LVGP/pi/nrep10/seed04: skip(exists)
+[183/2100] branin_hetero/heter_LVGP/ei/nrep10/seed03: skip(exists)
+[184/2100] branin_hetero/heter_LVGP/haei_g0.5/nrep10/seed03: skip(exists)
+[185/2100] branin_hetero/heter_LVGP/pi/nrep10/seed02: skip(exists)
+[186/2100] branin_hetero/standard_LVGP/pi/nrep10/seed05: skip(exists)
+[187/2100] branin_hetero/heter_LVGP/rahbo_a0.5/nrep10/seed02: skip(exists)
+[188/2100] branin_hetero/heter_LVGP/anpei_b0.8/nrep10/seed01: skip(exists)
+[189/2100] branin_hetero/heter_LVGP/anpei_b0.8/nrep10/seed02: skip(exists)
+[190/2100] branin_hetero/heter_LVGP/lcb/nrep10/seed02: skip(exists)
+[191/2100] branin_hetero/heter_LVGP/ei/nrep10/seed01: skip(exists)
+[192/2100] branin_hetero/heter_LVGP/haei_g0.5/nrep10/seed02: skip(exists)
+[193/2100] branin_hetero/heter_LVGP/rahbo_a0.5/nrep10/seed01: skip(exists)
+[194/2100] branin_hetero/heter_LVGP/rahbo_a0.5/nrep10/seed04: skip(exists)
+[195/2100] branin_hetero/heter_LVGP/rahbo_a0.5/nrep10/seed03: skip(exists)
+[196/2100] branin_hetero/heter_LVGP/ei/nrep10/seed04: skip(exists)
+[197/2100] branin_hetero/heter_LVGP/pi/nrep10/seed04: skip(exists)
+[198/2100] branin_hetero/standard_LVGP/ei/nrep10/seed04: skip(exists)
+[199/2100] branin_hetero/heter_LVGP/lcb/nrep10/seed03: skip(exists)
+[200/2100] branin_hetero/heter_LVGP/pi/nrep10/seed03: skip(exists)
+[201/2100] branin_hetero/heter_LVGP/lcb/nrep10/seed04: skip(exists)
+[202/2100] branin_hetero/heter_LVGP/haei_g0.5/nrep10/seed05: skip(exists)
+[203/2100] branin_hetero/heter_LVGP/anpei_b0.8/nrep10/seed03: skip(exists)
+[204/2100] branin_hetero/heter_LVGP/lcb/nrep10/seed05: skip(exists)
+[205/2100] branin_hetero/heter_LVGP/anpei_b0.8/nrep10/seed04: skip(exists)
+[206/2100] branin_hetero/heter_LVGP/ei/nrep10/seed05: skip(exists)
+[207/2100] branin_hetero/heter_LVGP/haei_g0.5/nrep10/seed04: skip(exists)
+[208/2100] branin_hetero/heter_LVGP/pi/nrep10/seed05: skip(exists)
+[209/2100] branin_hetero/heter_LVGP/anpei_b0.8/nrep10/seed05: skip(exists)
+[210/2100] branin_hetero/heter_LVGP/rahbo_a0.5/nrep10/seed05: skip(exists)
+[211/2100] golinski/separate_gp/ei/nrep10/seed03: ok
+[212/2100] golinski/separate_gp/haei_g0.5/nrep10/seed04: ok
+[213/2100] golinski/separate_gp/ei/nrep10/seed01: ok
+[214/2100] golinski/separate_gp/pi/nrep10/seed03: ok
+[215/2100] golinski/separate_gp/haei_g0.5/nrep10/seed01: ok
+[216/2100] golinski/separate_gp/ei/nrep10/seed02: ok
+[217/2100] golinski/separate_gp/haei_g0.5/nrep10/seed02: ok
+[218/2100] golinski/separate_gp/haei_g0.5/nrep10/seed03: ok
+[219/2100] golinski/separate_gp/pi/nrep10/seed02: ok
+[220/2100] golinski/separate_gp/ei/nrep10/seed04: ok
+[221/2100] golinski/separate_gp/pi/nrep10/seed04: ok
+[222/2100] golinski/separate_gp/pi/nrep10/seed01: ok
+[223/2100] golinski/separate_gp/anpei_b0.8/nrep10/seed01: ok
+[224/2100] golinski/separate_gp/ei/nrep10/seed05: ok
+[225/2100] golinski/separate_gp/haei_g0.5/nrep10/seed05: ok
+[226/2100] golinski/separate_gp/pi/nrep10/seed05: ok
+[227/2100] golinski/separate_gp/lcb/nrep10/seed02: ok
+[228/2100] golinski/separate_gp/anpei_b0.8/nrep10/seed04: ok
+[229/2100] golinski/separate_gp/anpei_b0.8/nrep10/seed03: ok
+[230/2100] golinski/separate_gp/anpei_b0.8/nrep10/seed02: ok
+[231/2100] golinski/categorical_kernel/ei/nrep10/seed01: ok
+[232/2100] golinski/categorical_kernel/haei_g0.5/nrep10/seed01: ok
+[233/2100] golinski/separate_gp/rahbo_a0.5/nrep10/seed02: ok
+[234/2100] golinski/categorical_kernel/pi/nrep10/seed01: ok
+[235/2100] golinski/separate_gp/lcb/nrep10/seed04: ok
+[236/2100] golinski/separate_gp/lcb/nrep10/seed03: ok
+[237/2100] golinski/separate_gp/lcb/nrep10/seed05: ok
+[238/2100] golinski/categorical_kernel/lcb/nrep10/seed01: ok
+[239/2100] golinski/categorical_kernel/pi/nrep10/seed03: ok
+[240/2100] golinski/categorical_kernel/ei/nrep10/seed02: ok
+[241/2100] golinski/categorical_kernel/lcb/nrep10/seed03: ok
+[242/2100] golinski/categorical_kernel/lcb/nrep10/seed02: ok
+[243/2100] golinski/categorical_kernel/pi/nrep10/seed02: ok
+[244/2100] golinski/separate_gp/rahbo_a0.5/nrep10/seed04: ok
+[245/2100] golinski/categorical_kernel/haei_g0.5/nrep10/seed02: ok
+[246/2100] golinski/separate_gp/anpei_b0.8/nrep10/seed05: ok
+[247/2100] golinski/categorical_kernel/ei/nrep10/seed03: ok
+[248/2100] golinski/categorical_kernel/haei_g0.5/nrep10/seed03: ok
+[249/2100] golinski/separate_gp/rahbo_a0.5/nrep10/seed01: ok
+[250/2100] golinski/separate_gp/lcb/nrep10/seed01: ok
+[251/2100] golinski/separate_gp/rahbo_a0.5/nrep10/seed03: ok
+[252/2100] golinski/separate_gp/rahbo_a0.5/nrep10/seed05: ok
+[253/2100] golinski/categorical_kernel/ei/nrep10/seed04: ok
+[254/2100] golinski/categorical_kernel/haei_g0.5/nrep10/seed04: ok
+[255/2100] golinski/categorical_kernel/pi/nrep10/seed04: ok
+[256/2100] golinski/categorical_kernel/lcb/nrep10/seed05: ok
+[257/2100] golinski/categorical_kernel/lcb/nrep10/seed04: ok
+[258/2100] golinski/categorical_kernel/ei/nrep10/seed05: ok
+[259/2100] golinski/categorical_kernel/pi/nrep10/seed05: ok
+[260/2100] golinski/categorical_kernel/haei_g0.5/nrep10/seed05: ok
+[261/2100] golinski/categorical_kernel/anpei_b0.8/nrep10/seed01: ok
+[262/2100] golinski/categorical_kernel/anpei_b0.8/nrep10/seed02: ok
+[263/2100] golinski/categorical_kernel/anpei_b0.8/nrep10/seed03: ok
+[264/2100] golinski/categorical_kernel/anpei_b0.8/nrep10/seed04: ok
+[265/2100] golinski/categorical_kernel/anpei_b0.8/nrep10/seed05: ok
+[266/2100] golinski/categorical_kernel/rahbo_a0.5/nrep10/seed01: ok
+[267/2100] golinski/categorical_kernel/rahbo_a0.5/nrep10/seed02: ok
+[268/2100] golinski/categorical_kernel/rahbo_a0.5/nrep10/seed05: ok
+[269/2100] golinski/categorical_kernel/rahbo_a0.5/nrep10/seed03: ok
+[270/2100] golinski/categorical_kernel/rahbo_a0.5/nrep10/seed04: ok
+[271/2100] golinski/heter_LVGP/haei_g0.5/nrep10/seed01: ok
+[272/2100] golinski/heter_LVGP/pi/nrep10/seed01: ok
+[273/2100] golinski/standard_LVGP/ei/nrep10/seed05: ok
+[274/2100] golinski/standard_LVGP/pi/nrep10/seed01: ok
+[275/2100] golinski/standard_LVGP/ei/nrep10/seed04: ok
+[276/2100] golinski/heter_LVGP/pi/nrep10/seed02: ok
+[277/2100] golinski/standard_LVGP/pi/nrep10/seed03: ok
+[278/2100] golinski/heter_LVGP/ei/nrep10/seed01: ok
+[279/2100] golinski/standard_LVGP/ei/nrep10/seed02: ok
+[280/2100] golinski/standard_LVGP/pi/nrep10/seed04: ok
+[281/2100] golinski/standard_LVGP/ei/nrep10/seed01: ok
+[282/2100] golinski/standard_LVGP/lcb/nrep10/seed04: ok
+[283/2100] golinski/heter_LVGP/ei/nrep10/seed02: ok
+[284/2100] golinski/standard_LVGP/pi/nrep10/seed02: ok
+[285/2100] golinski/standard_LVGP/pi/nrep10/seed05: ok
+[286/2100] golinski/standard_LVGP/lcb/nrep10/seed05: ok
+[287/2100] golinski/standard_LVGP/ei/nrep10/seed03: ok
+[288/2100] golinski/heter_LVGP/rahbo_a0.5/nrep10/seed01: ok
+[289/2100] golinski/heter_LVGP/anpei_b0.8/nrep10/seed01: ok
+[290/2100] golinski/standard_LVGP/lcb/nrep10/seed03: ok
+[291/2100] golinski/heter_LVGP/haei_g0.5/nrep10/seed02: ok

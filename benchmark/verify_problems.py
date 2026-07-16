@@ -53,16 +53,24 @@ def main():
     try:
         for name in funcs:
             spec = P.get(name)
-            x1 = np.linspace(spec.lb, spec.ub, 50)
-            grid_x1, grid_lv = [], []
+            # d==1: the historical 50-pt grid per level. d>1: 200 seeded-random points per level
+            # (a dense grid is infeasible; random points test the equations just as strictly).
+            if spec.d == 1:
+                base = np.linspace(spec.lb, spec.ub, 50).reshape(-1, 1)
+            else:
+                rng = np.random.default_rng(12345)
+                base = rng.uniform(spec.bounds[:, 0], spec.bounds[:, 1], size=(200, spec.d))
+            GX, glv = [], []
             for lv in spec.levels:
-                grid_x1.append(x1); grid_lv.append(np.full_like(x1, lv))
-            gx1 = np.concatenate(grid_x1); glv = np.concatenate(grid_lv)
-            f_py = np.array([float(spec.f_true_level(a, int(b))) for a, b in zip(gx1, glv)])
-            s_py = np.array([float(spec.sigma_level(a, int(b))) for a, b in zip(gx1, glv)])
+                GX.append(base); glv.append(np.full(len(base), lv))
+            GX = np.vstack(GX); glv = np.concatenate(glv)
+            f_py = np.concatenate([np.ravel(spec.f_true_level(GX[glv == lv], int(lv)))
+                                   for lv in spec.levels])
+            s_py = np.concatenate([np.ravel(spec.sigma_level(GX[glv == lv], int(lv)))
+                                   for lv in spec.levels])
 
             infile = tempfile.mktemp(suffix=".mat"); outfile = tempfile.mktemp(suffix=".mat")
-            scipy.io.savemat(infile, {"x1": gx1.reshape(-1, 1), "lv": glv.reshape(-1, 1)})
+            scipy.io.savemat(infile, {"X": GX, "lv": glv.reshape(-1, 1)})
             cmd = [MATLAB, "-nodisplay", "-batch", f"eval_problems('{name}','{infile}','{outfile}')"]
             rc = subprocess.run(cmd, cwd=os.path.join(HERE, "matlab"), env=env,
                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode

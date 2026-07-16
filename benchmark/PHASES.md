@@ -82,16 +82,49 @@ A crude O(n³) projection from the *measured* 475 s/cell (branin, heter_LVGP, 50
 At 1440 heter_LVGP cells/problem this is **not runnable**. **Measure one real multi-dim heter_LVGP cell
 before planning the sweep.** It may force fewer seeds/iterations, a subsampled grid, or a faster fit.
 
+### Probe vehicle: rastrigin_6d — DONE (first real multi-dim problem, both engines)
+- [x] Python equations — analytic checks EXACT (f(c(ℓ),ℓ)=b(ℓ) ∀ℓ; lattice identity; σ(c(1),1)=√1.1).
+- [x] `problems.m` twin — `verify_problems.py` **ALL MATCH** (max|Δf|=2.8e-14 over 800 random 5-D pts;
+      the 4 one-D problems still match through the d-generalized harness).
+- [x] Exact ground truth wired via `meta` (`f_star`/`x_star`/`f_star_per_level`) — multi-dim regret is
+      analytic, not grid-approximated (uniqueness proved in the source doc).
+- [x] **d=5 MATLAB engine smoke: PASS** (heter + standard drivers, 3 iters, valid v2 cells).
+      ⚠ Timing: 3 iters = 312 s heter / 158 s standard at n_tr≈33 → **~104 s/iter vs ~9.5 s/iter in 1-D**.
+      Even flat extrapolation ⇒ ≥6 h per heter cell; n-growth makes it worse. Full-cell probe running.
+- [x] Full 200-iter heter_LVGP cell probe (timestamped): **per-iteration time is FLAT ~41 s over
+      n_tr 34→113** — cost is CONSTANT-dominated (6-dim hyperopt + 12k-candidate search), NOT O(n³);
+      the 29–40 h/cell projection was wrong. All fits agree: **~2.3–3.6 h per heter cell (≈2.7 h best
+      estimate)**. Measured python: separate_gp ≈ 0.3 h/cell @ 200 iters (finds the right basin).
+
+### VERDICT (rastrigin-scale problem, full xlsx budget: 6 acqs × 2 nreps × 30 seeds)
+| model | cells | est. core-h |
+|---|---|---|
+| heter_LVGP | 360 | ~970 |
+| standard_LVGP | 180 | ~250 |
+| categorical_kernel | 360 | ~350 (TBD, cells running) |
+| separate_gp | 360 | ~110 |
+⇒ **~1700 core-h ≈ 4 days wall on 18 workers PER PROBLEM**; ×6 problems (10-D ones ~1.5×) ≈
+**~4 weeks continuous**. Feasible but long. Rescoping levers (multiplicative): seeds 30→15 (×½),
+nrep {3,10}→{10} (×½), heter restricted to noise-aware acqs (heter block ×½), MATLAB num_iter
+200→100 (MATLAB blocks ×½, deviates from xlsx). Decision = owner's.
+
 ---
 
-## PHASE 2c — the 6 equations (both engines)
+## ✅ PHASE 2c — the 6 equations (both engines) — COMPLETE
 
-- [ ] Python `utils/problems.py` + MATLAB `matlab/problems.m` (⚠ `reshape(level_lookup, size(x1))` —
-      MATLAB `v(lv)` keeps v's row orientation and silently broadcasts to a matrix).
-- [ ] `verify_problems.py` — Python == MATLAB to ~1e-15 for all 10 (as done for the 1-D four).
-- [ ] ⚠ **rastrigin_6d** is special: per-level **centers** c(ℓ) shift the optimum *location*, not just noise.
-- [ ] Engineering problems (golinski / piston / otl_circuit) have **per-variable ranges** — already in
-      `doe.PROBLEM_GRID`.
+- [x] All 6 implemented in Python + MATLAB. **`verify_problems.py`: ALL 10 MATCH** (max|Δf| ≤ 9e-13,
+      relative ~1e-16; 800 random d-dim points per problem).
+- [x] rastrigin_6d (per-level centers) done in 2b. TP-5/6: level value enters as x10; analytic optima
+      at x_q=0 wired into meta (exact formula values — the doc's f-min table has small rounding
+      artifacts from pre-rounded cosines; we follow the FORMULA).
+- [x] ENG-1/2/3: per-variable ranges; ground truth = **exact corner optima** (f monotone over the box;
+      256-start Sobol+L-BFGS all converge to the same corner, zero spread) embedded in meta.
+      ⚠ Design note: piston/OTL per-level f* gaps (1e-3..7e-3) are BELOW their sigma (up to 0.03/0.1)
+      → the intended challenge is LEVEL identification under noise; golinski gaps (~270) are easy.
+- [x] DOE caches build for all 5 (X (n, d+1), balanced, in-bounds); d=9 end-to-end python BO smoke
+      passes (both models, rahbo, r_at_est finite).
+**ALL 10 PROBLEMS LIVE.** Remaining before a full multi-dim sweep: the SCOPE DECISION (Phase 2b verdict
+table) — full budget ≈ 4 weeks vs rescoped.
 
 ---
 

@@ -158,8 +158,211 @@ ACKLEY2D = ProblemSpec("ackley_2d", _ackley2d_f, _ackley2d_sigma, -3.0, 3.0, 4,
                        meta=dict(cat_values=_ACK_VALS, noise_muls=_ACK_MULS))
 
 # ======================================================================================
-#  Phase-2 multi-dim problems (TP-5/6/7, ENG-1/2/3) -- stubs until the framework is
-#  generalized to d continuous dimensions.
+#  TP-7  Level-Shifted Rastrigin 6-D -- 5 continuous + 4 levels. Each level's global minimum
+#  is at a DISTINCT location c(l) with a DISTINCT value b(l) (proved unique in the doc):
+#     f(xq, l) = sum_i [(x_i - c_i(l))^2 - 10 cos(2 pi (x_i - c_i(l))) + 10] + b(l)
+#     sigma(xq, l) = sqrt(1 + 0.05 mean(xq^2)) * mult(l)
+# ======================================================================================
+_RAST_C = np.array([[-2.,  1., -1.,  2.,  0.],      # level 1 (a)
+                    [ 1., -2.,  2., -1., -2.],      # level 2 (b)
+                    [ 2.,  2., -2.,  0.,  1.],      # level 3 (c)
+                    [-1., -1.,  0., -2.,  2.]])     # level 4 (d)
+_RAST_B = np.array([5., 20., 40., 65.])
+_RAST_MULS = np.array([1.0, 2.0, 1.5, 3.0])
+
+
+def _rastrigin6d_f(X, level):
+    D = X - _RAST_C[level - 1]
+    return np.sum(D ** 2 - 10.0 * np.cos(2.0 * np.pi * D) + 10.0, axis=1) + _RAST_B[level - 1]
+
+
+def _rastrigin6d_sigma(X, level):
+    return np.sqrt(1.0 + 0.05 * np.mean(X ** 2, axis=1)) * _RAST_MULS[level - 1]
+
+
+RASTRIGIN6D = ProblemSpec(
+    "rastrigin_6d", _rastrigin6d_f, _rastrigin6d_sigma, bounds=[(-5.0, 5.0)] * 5, n_levels=4,
+    meta=dict(centers=_RAST_C.tolist(), b_shift=_RAST_B.tolist(), noise_muls=_RAST_MULS.tolist(),
+              # analytic ground truth (unique; see the doc's uniqueness proof)
+              f_star=5.0, opt_level=1, x_star=_RAST_C[0].tolist(),
+              f_star_per_level=_RAST_B.tolist()),
+)
+
+
+# ======================================================================================
+#  TP-5  Griewank 10-D -- 9 continuous + 4 levels (level value v enters as x10):
+#     f(xq, l) = sum_{i=1..10} xs_i^2/4000 - prod_{i=1..10} cos(xs_i/sqrt(i)) + 1,  xs=[xq, v(l)]
+#     sigma    = 0.05*sqrt(1 + 0.1*||xq||^2/9) * mult(l)
+#  Unique global min at xq = 0 for every level (all cos(v/sqrt(10)) > 0; doc's level redesign).
+# ======================================================================================
+_G10_VALS = np.array([1.0, 2.0, 3.0, 4.0])
+_G10_MULS = np.array([1.5, 1.0, 3.0, 2.0])
+_G10_SQRT_I = np.sqrt(np.arange(1, 11, dtype=float))
+
+
+def _griewank10d_f(X, level):
+    v = _G10_VALS[level - 1]
+    XS = np.hstack([X, np.full((X.shape[0], 1), v)])
+    return np.sum(XS ** 2, axis=1) / 4000.0 - np.prod(np.cos(XS / _G10_SQRT_I), axis=1) + 1.0
+
+
+def _griewank10d_sigma(X, level):
+    return 0.05 * np.sqrt(1.0 + 0.1 * np.sum(X ** 2, axis=1) / 9.0) * _G10_MULS[level - 1]
+
+
+_G10_FSTAR = [float(v * v / 4000.0 + 1.0 - np.cos(v / np.sqrt(10.0))) for v in _G10_VALS]
+GRIEWANK10D = ProblemSpec(
+    "griewank_10d", _griewank10d_f, _griewank10d_sigma, bounds=[(-5.0, 5.0)] * 9, n_levels=4,
+    meta=dict(cat_values=_G10_VALS.tolist(), noise_muls=_G10_MULS.tolist(),
+              f_star=_G10_FSTAR[0], opt_level=1, x_star=[0.0] * 9, f_star_per_level=_G10_FSTAR),
+)
+
+
+# ======================================================================================
+#  TP-6  Ackley 10-D -- 9 continuous + 4 levels (level value v enters as x10), a=20 b=0.2 c=2pi:
+#     f(xq, l) = -20 exp(-0.2 sqrt(sum(xs^2)/10)) - exp(sum(cos(2 pi xs))/10) + 20 + e
+#     sigma    = 0.10*exp(0.20*sqrt(mean(xq^2))) * mult(l)
+#  Unique global min at xq = 0 (integer v => cos(2 pi v)=1): f* = 20(1 - exp(-0.2 v/sqrt(10))).
+# ======================================================================================
+_A10_VALS = np.array([1.0, 2.0, 3.0, 4.0])
+_A10_MULS = np.array([2.0, 1.0, 3.5, 1.5])
+
+
+def _ackley10d_f(X, level):
+    v = _A10_VALS[level - 1]
+    XS = np.hstack([X, np.full((X.shape[0], 1), v)])
+    return (-20.0 * np.exp(-0.2 * np.sqrt(np.sum(XS ** 2, axis=1) / 10.0))
+            - np.exp(np.sum(np.cos(2.0 * np.pi * XS), axis=1) / 10.0) + 20.0 + np.e)
+
+
+def _ackley10d_sigma(X, level):
+    return 0.10 * np.exp(0.20 * np.sqrt(np.mean(X ** 2, axis=1))) * _A10_MULS[level - 1]
+
+
+_A10_FSTAR = [float(20.0 * (1.0 - np.exp(-0.2 * v / np.sqrt(10.0)))) for v in _A10_VALS]
+ACKLEY10D = ProblemSpec(
+    "ackley_10d", _ackley10d_f, _ackley10d_sigma, bounds=[(-5.0, 5.0)] * 9, n_levels=4,
+    meta=dict(cat_values=_A10_VALS.tolist(), noise_muls=_A10_MULS.tolist(),
+              f_star=_A10_FSTAR[0], opt_level=1, x_star=[0.0] * 9, f_star_per_level=_A10_FSTAR),
+)
+
+
+# ======================================================================================
+#  ENG-1  Golinski speed reducer -- 6 continuous [x1 face-width, x2 module, x4, x5 shaft lengths,
+#  x6, x7 diameters] + x3 = teeth count as the 5-level categorical {17,19,21,25,28}:
+#     f = 0.7854 x1 x2^2 (3.3333 x3^2 + 14.9334 x3 - 43.0934) - 1.508 x1 (x6^2 + x7^2)
+#         + 7.4777 (x6^3 + x7^3) + 0.7854 (x4 x6^2 + x5 x7^2)
+#     sigma = 20 exp(0.40(x1-2.6)) (1 + 0.20(x6-2.9)) * mult(l)
+#  (X columns: x1, x2, x4, x5, x6, x7 -- same order as PROBLEM_GRID bounds.)
+# ======================================================================================
+_GOL_VALS = np.array([17.0, 19.0, 21.0, 25.0, 28.0])
+_GOL_MULS = np.array([1.2, 1.0, 1.5, 1.8, 1.3])
+
+
+def _golinski_f(X, level):
+    x1, x2, x4, x5, x6, x7 = (X[:, j] for j in range(6))
+    x3 = _GOL_VALS[level - 1]
+    return (0.7854 * x1 * x2 ** 2 * (3.3333 * x3 ** 2 + 14.9334 * x3 - 43.0934)
+            - 1.508 * x1 * (x6 ** 2 + x7 ** 2) + 7.4777 * (x6 ** 3 + x7 ** 3)
+            + 0.7854 * (x4 * x6 ** 2 + x5 * x7 ** 2))
+
+
+def _golinski_sigma(X, level):
+    return 20.0 * np.exp(0.40 * (X[:, 0] - 2.6)) * (1.0 + 0.20 * (X[:, 4] - 2.9)) * _GOL_MULS[level - 1]
+
+
+# Ground truth: f is monotone over the box -> unique BOUNDARY optimum, identical corner for every
+# level (verified: 256-start Sobol + L-BFGS all converge there, zero spread). Values = exact corner eval.
+_GOL_XSTAR = [2.6, 0.7, 7.3, 7.3, 2.9, 5.0]
+_GOL_FSTAR = [2352.44784872076, 2622.474059415, 2919.18265928268, 3592.6470265383596,
+              4167.786573560399]
+GOLINSKI = ProblemSpec(
+    "golinski", _golinski_f, _golinski_sigma, n_levels=5,
+    bounds=[(2.6, 3.6), (0.7, 0.8), (7.3, 8.3), (7.3, 8.3), (2.9, 3.9), (5.0, 5.5)],
+    meta=dict(cat_values=_GOL_VALS.tolist(), noise_muls=_GOL_MULS.tolist(),
+              f_star=_GOL_FSTAR[0], opt_level=1, x_star=_GOL_XSTAR, f_star_per_level=_GOL_FSTAR),
+)
+
+
+# ======================================================================================
+#  ENG-2  Piston simulation -- 6 continuous [M, S, V0, k, P0, Ta] + T0 as the 4-level categorical
+#  {340,346,352,358} K. Cycle time:
+#     A = P0 S + 19.62 M - k V0 / S
+#     V = (S / 2k) (sqrt(A^2 + 4 k P0 V0 Ta / T0) - A)
+#     f = C = 2 pi sqrt(M / (k + S^2 P0 V0 Ta / (T0 V^2)))
+#     sigma = 0.002 (1 + 3 (P0 - 90000)/20000) (1 + 0.5 (M - 30)/30) * mult(l)
+# ======================================================================================
+_PIS_VALS = np.array([340.0, 346.0, 352.0, 358.0])
+_PIS_MULS = np.array([1.0, 1.3, 1.6, 2.0])
+
+
+def _piston_f(X, level):
+    M, S, V0, k, P0, Ta = (X[:, j] for j in range(6))
+    T0 = _PIS_VALS[level - 1]
+    A = P0 * S + 19.62 * M - k * V0 / S
+    V = (S / (2.0 * k)) * (np.sqrt(A ** 2 + 4.0 * k * P0 * V0 * Ta / T0) - A)
+    return 2.0 * np.pi * np.sqrt(M / (k + S ** 2 * P0 * V0 * Ta / (T0 * V ** 2)))
+
+
+def _piston_sigma(X, level):
+    M, P0 = X[:, 0], X[:, 4]
+    return (0.002 * (1.0 + 3.0 * (P0 - 90000.0) / 20000.0)
+            * (1.0 + 0.5 * (M - 30.0) / 30.0) * _PIS_MULS[level - 1])
+
+
+# Ground truth: unique boundary optimum, same corner for every level (multi-start verified, zero
+# spread). NOTE the per-level f* gaps (~1e-3) are far below sigma (up to ~0.03): identifying the best
+# LEVEL under noise is the intended challenge of this problem.
+_PIS_XSTAR = [30.0, 0.020, 0.002, 5000.0, 110000.0, 290.0]
+_PIS_FSTAR = [0.1674451638202761, 0.16645996229564428, 0.1654924039747633, 0.1645419534505813]
+PISTON = ProblemSpec(
+    "piston", _piston_f, _piston_sigma, n_levels=4,
+    bounds=[(30.0, 60.0), (0.005, 0.020), (0.002, 0.010), (1000.0, 5000.0),
+            (90000.0, 110000.0), (290.0, 296.0)],
+    meta=dict(cat_values=_PIS_VALS.tolist(), noise_muls=_PIS_MULS.tolist(),
+              f_star=_PIS_FSTAR[3], opt_level=4, x_star=_PIS_XSTAR, f_star_per_level=_PIS_FSTAR),
+)
+
+
+# ======================================================================================
+#  ENG-3  OTL circuit -- 5 continuous [Rb1, Rb2, Rf, Rc1, Rc2] + beta as the 4-level categorical
+#  {50,100,200,300}. Mid-point voltage:
+#     Vm = 12 Rb2 / (Rb1 + Rb2);  den = beta (Rc2 + 9) + Rf
+#     f = (Vm + 0.74) beta (Rc2 + 9) / den + 11.35 Rf / den + 0.74 Rf beta (Rc2 + 9) / (den Rc1)
+#     sigma = 0.01 sqrt(Rb1 / 50) (1 + 0.3 Rf) * mult(l)
+# ======================================================================================
+_OTL_VALS = np.array([50.0, 100.0, 200.0, 300.0])
+_OTL_MULS = np.array([2.5, 1.5, 1.0, 0.7])
+
+
+def _otl_f(X, level):
+    Rb1, Rb2, Rf, Rc1, Rc2 = (X[:, j] for j in range(5))
+    beta = _OTL_VALS[level - 1]
+    Vm = 12.0 * Rb2 / (Rb1 + Rb2)
+    bR = beta * (Rc2 + 9.0)
+    den = bR + Rf
+    return (Vm + 0.74) * bR / den + 11.35 * Rf / den + 0.74 * Rf * bR / (den * Rc1)
+
+
+def _otl_sigma(X, level):
+    return 0.01 * np.sqrt(X[:, 0] / 50.0) * (1.0 + 0.3 * X[:, 2]) * _OTL_MULS[level - 1]
+
+
+# Ground truth: unique boundary optimum, same corner for every level (multi-start verified, zero
+# spread). Per-level f* gaps (~2e-3..7e-3) sit below sigma (up to ~0.1) -> level identification under
+# noise is the challenge here too.
+_OTL_XSTAR = [150.0, 25.0, 0.5, 2.5, 1.25]
+_OTL_FSTAR = [2.610811751601225, 2.6065508114508598, 2.6044187828752565, 2.6037078756067538]
+OTL = ProblemSpec(
+    "otl_circuit", _otl_f, _otl_sigma, n_levels=4,
+    bounds=[(50.0, 150.0), (25.0, 70.0), (0.5, 3.0), (1.2, 2.5), (0.25, 1.25)],
+    meta=dict(cat_values=_OTL_VALS.tolist(), noise_muls=_OTL_MULS.tolist(),
+              f_star=_OTL_FSTAR[3], opt_level=4, x_star=_OTL_XSTAR, f_star_per_level=_OTL_FSTAR),
+)
+
+
+# ======================================================================================
+#  Phase-2 multi-dim problems (TP-5/6, ENG-1/2/3) -- stubs until their equations are added.
 # ======================================================================================
 def _todo(name):
     def _f(x1, level):
@@ -177,12 +380,12 @@ PROBLEMS = {
     "sixhump_camel": CAMEL,         # TP-2  (1-D, 4 levels)
     "griewank_2d":   GRIEWANK2D,    # TP-3  (1-D, 4 levels)
     "ackley_2d":     ACKLEY2D,      # TP-4  (1-D, 4 levels)
-    "griewank_10d":  _stub("griewank_10d"),   # TP-5  (9-D)  Phase 2
-    "ackley_10d":    _stub("ackley_10d"),      # TP-6  (9-D)  Phase 2
-    "rastrigin_6d":  _stub("rastrigin_6d"),    # TP-7  (5-D)  Phase 2
-    "golinski":      _stub("golinski"),        # ENG-1 (6-D)  Phase 2
-    "piston":        _stub("piston"),          # ENG-2 (6-D)  Phase 2
-    "otl_circuit":   _stub("otl_circuit"),     # ENG-3 (5-D)  Phase 2
+    "griewank_10d":  GRIEWANK10D,             # TP-5  (9-D, 4 levels) LIVE
+    "ackley_10d":    ACKLEY10D,                # TP-6  (9-D, 4 levels) LIVE
+    "rastrigin_6d":  RASTRIGIN6D,              # TP-7  (5-D, 4 levels) LIVE
+    "golinski":      GOLINSKI,                 # ENG-1 (6-D, 5 levels) LIVE
+    "piston":        PISTON,                   # ENG-2 (6-D, 4 levels) LIVE
+    "otl_circuit":   OTL,                      # ENG-3 (5-D, 4 levels) LIVE
 }
 
 
@@ -197,7 +400,7 @@ def defined_problems():
     out = []
     for nm, sp in PROBLEMS.items():
         try:
-            sp.f_true_level(np.array([0.0]), 1)
+            sp.f_true_level(sp.bounds.mean(axis=1), 1)   # mid-box probe (zeros can be out of bounds)
             out.append(nm)
         except NotImplementedError:
             pass
@@ -266,12 +469,16 @@ def _grid_1d_only(spec, fn_name):
 
 
 def ground_truth_min(spec, n=4000):
+    if "f_star" in spec.meta:                        # analytic optimum (multi-dim problems)
+        return float(spec.meta["f_star"])
     _grid_1d_only(spec, "ground_truth_min")
     x1 = np.linspace(spec.lb, spec.ub, n)
     return float(min(spec.f_true_level(x1, lv).min() for lv in spec.levels))
 
 
 def true_opt_location(spec, n=4000):
+    if "x_star" in spec.meta:
+        return int(spec.meta["opt_level"]), np.asarray(spec.meta["x_star"], float)
     _grid_1d_only(spec, "true_opt_location")
     x1 = np.linspace(spec.lb, spec.ub, n)
     best = (np.inf, None, None)
@@ -283,6 +490,8 @@ def true_opt_location(spec, n=4000):
 
 
 def true_min_per_category(spec, n=4000):
+    if "f_star_per_level" in spec.meta:
+        return np.asarray(spec.meta["f_star_per_level"], float)
     _grid_1d_only(spec, "true_min_per_category")
     x1 = np.linspace(spec.lb, spec.ub, n)
     return np.array([spec.f_true_level(x1, lv).min() for lv in spec.levels])

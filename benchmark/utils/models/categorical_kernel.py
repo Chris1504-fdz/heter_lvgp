@@ -58,7 +58,7 @@ class CategoricalKernelGP(BaseModel):
         self._ale = ale
 
     @classmethod
-    def fit(cls, data_by_level, needs_r=True):
+    def fit(cls, data_by_level, needs_r=True, **_kw):
         model = _fit_mixed_gp(data_by_level)
         ale = AleatoricModels.fit(data_by_level) if needs_r else None
         return cls(model, sorted(int(lv) for lv in data_by_level), ale)

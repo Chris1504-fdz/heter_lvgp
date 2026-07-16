@@ -46,7 +46,7 @@ class SeparateGP(BaseModel):
         self.d = int(d)
 
     @classmethod
-    def fit(cls, data_by_level, needs_r=True):
+    def fit(cls, data_by_level, needs_r=True, **_kw):
         models = {lv: _fit_category_gp(d["X"], d["y_mean"], d["y_var"])
                   for lv, d in data_by_level.items()}
         ale = AleatoricModels.fit(data_by_level) if needs_r else None

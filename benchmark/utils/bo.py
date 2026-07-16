@@ -105,7 +105,7 @@ def run_bo(spec, model_cls, acf, param, n_rep, seed, num_iter, model_name="pytho
     for _ in range(num_iter):
         # Always fit the aleatoric poly (a cheap ridge): the acquisition only uses it when needs_r,
         # but r_at_est is recorded every iteration so the noise-at-best plot never needs a refit.
-        model = model_cls.fit(data, needs_r=True)
+        model = model_cls.fit(data, needs_r=True, bounds=bounds)
         ymin = float(np.min(Y_sampled))
 
         mean_fn = lambda lv: (lambda xs: model.predict(lv, xs, observation_noise=False)[0])
