@@ -81,9 +81,10 @@ class _LVGPTorchBase(BaseModel):
         tx = torch.tensor(Xn, dtype=DTYPE); ty = torch.tensor(y, dtype=DTYPE)
         m = LVGPR(train_x=tx, train_y=ty, qual_index=[d], quant_index=list(range(d)),
                   num_levels_per_var=[len(data_by_level)], lv_dim=2).double()
-        if cls.HETERO:                                  # replicate variances as FIXED observation noise
-            m.likelihood = FixedNoiseGaussianLikelihood(
-                noise=torch.tensor(np.maximum(v, 1e-6), dtype=DTYPE)).double()
+        if cls.HETERO:                                  # replicate variances as FIXED observation noise.
+            ys2 = float(m.y_std) ** 2                    # LVGPR standardizes train_y internally, so the
+            m.likelihood = FixedNoiseGaussianLikelihood(  # noise VARIANCE must be in standardized units too
+                noise=torch.tensor(np.maximum(v, 1e-6) / ys2, dtype=DTYPE)).double()
 
         n_fits = 0
         if WARM_START and warm_from is not None and isinstance(warm_from, _LVGPTorchBase):
@@ -116,8 +117,11 @@ class _LVGPTorchBase(BaseModel):
 
     def predict(self, level, x_new, observation_noise=False):
         with torch.no_grad():
-            post = self.model(self._encode(level, x_new))          # latent (noise-free) posterior
-        return post.mean.numpy().ravel(), post.variance.numpy().ravel()
+            post = self.model(self._encode(level, x_new))          # STANDARDIZED-y latent posterior
+        ys = float(self.model.y_std); ym = float(self.model.y_mean)  # de-standardize to RAW y units:
+        mu = ym + ys * post.mean.numpy().ravel()                     # ymin and the acquisitions are raw-scale,
+        var = post.variance.numpy().ravel() * ys * ys                # so mu/var must be too (lvgp-bayes's own
+        return mu, var                                               # predict() does this; self.model(x) skips it)
 
     def mean_std(self, level, x_new):
         mu, var = self.predict(level, x_new)
