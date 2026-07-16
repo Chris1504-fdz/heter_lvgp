@@ -32,6 +32,12 @@ DTYPE = torch.float64
 COLD_RESTARTS = 2
 RESTART_EVERY = 25
 WARM_START = False                    # protocol-matched cold fits; see module docstring
+NUGGET = 1e-4                         # nugget FLOOR in standardized-y units. lvgp-bayes defaults to
+                                      # lb_noise=1e-6 AND puts a horseshoe prior shrinking noise toward
+                                      # it, so clustered BO points drive the kernel near-singular and a
+                                      # minority of seeds get stranded. MATLAB LVGP instead guarantees a
+                                      # correlation-matrix eigenvalue floor (adaptive eps ladder, baked
+                                      # into the likelihood). This constant is the fixed-floor analogue.
 
 
 def _stack(data_by_level, bounds):
