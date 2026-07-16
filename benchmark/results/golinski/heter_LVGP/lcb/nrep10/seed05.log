@@ -161,3 +161,13 @@ Solver stopped prematurely.
 fmincon stopped because it exceeded the function evaluation limit,
 options.MaxFunctionEvaluations = 1.000000e+03.
 
+Iteration 7 completed. Current sample-mean minimum is 2349.429817. New variance estimate is 612.430765.
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
+
+Feasible point with lower objective function value found, but optimality criteria not satisfied. See output.bestfeasible..
+
