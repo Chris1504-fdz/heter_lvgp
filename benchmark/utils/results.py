@@ -182,14 +182,19 @@ def final_regret_table(grid, acf="ei", param=float("nan"), n_rep=10):
 #  The `_true_best_traj` above is the ground-truth trajectory; `_noisy_best_traj` is its counterpart.
 # ======================================================================================
 MODEL_COLORS = {"standard_LVGP": "C0", "heter_LVGP": "C3",
-                "separate_gp": "C2", "categorical_kernel": "C1"}
+                "separate_gp": "C2", "categorical_kernel": "C1",
+                "lvgp_native": "#17becf",        # Python homoscedastic (cyan, pairs with C0)
+                "heter_lvgp_native": "#9467bd",   # Python heteroscedastic (purple, pairs with C3)
+                "lvgp_torch": "#7f7f7f", "heter_lvgp_torch": "#8c564b"}
 MODEL_ORDER = ["standard_LVGP", "heter_LVGP", "separate_gp", "categorical_kernel"]
 
 # Per-problem deep dive grammar: ACQUISITION -> colour, MODEL -> (linestyle, marker). Kept consistent
 # across every panel so a reader learns the encoding once. Acquisition colours follow CONFIG_ORDER.
 ACQ_COLORS = {a: f"C{i}" for i, (a, _p) in enumerate(acquisitions.CONFIG_ORDER)}
 MODEL_STYLES = {"standard_LVGP": ("-", "o"), "heter_LVGP": ("--", "s"),
-                "separate_gp": (":", "^"), "categorical_kernel": ("-.", "D")}
+                "separate_gp": (":", "^"), "categorical_kernel": ("-.", "D"),
+                "lvgp_native": ("-", "v"), "heter_lvgp_native": ("--", "P"),
+                "lvgp_torch": (":", "X"), "heter_lvgp_torch": ("-.", "*")}
 
 
 def _mlabel(m):
@@ -270,7 +275,7 @@ def _panel(ax, grid, function, acf, param, n_rep, series_fn, ylabel, logy, title
         x = np.arange(1, L + 1)
         lo = np.maximum(lo_b, 1e-12) if logy else lo_b
         ax.plot(x, np.maximum(mid, 1e-12) if logy else mid,
-                color=MODEL_COLORS.get(m, "C7"), lw=2) # label=f"{_mlabel(m)} (n={len(A)})"
+                color=MODEL_COLORS.get(m, "C7"), lw=2, label=f"{_mlabel(m)} (n={len(A)})")
         ax.fill_between(x, lo, hi_b, color=MODEL_COLORS.get(m, "C7"), alpha=0.15)
         any_data = True
     if logy:

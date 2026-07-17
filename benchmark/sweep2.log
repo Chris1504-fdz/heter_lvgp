@@ -581,3 +581,8 @@ shared Xvfb on :97 (pid 2880110)
 [462/2100] otl_circuit/categorical_kernel/lcb/nrep10/seed05: ok
 [463/2100] otl_circuit/categorical_kernel/anpei_b0.8/nrep10/seed05: ok
 [464/2100] otl_circuit/categorical_kernel/rahbo_a0.5/nrep10/seed05: ok
+[465/2100] otl_circuit/standard_LVGP/pi/nrep10/seed01: ok
+[466/2100] otl_circuit/standard_LVGP/ei/nrep10/seed01: ok
+[467/2100] otl_circuit/standard_LVGP/pi/nrep10/seed02: ok
+[468/2100] otl_circuit/standard_LVGP/lcb/nrep10/seed01: ok
+[469/2100] otl_circuit/standard_LVGP/pi/nrep10/seed03: ok

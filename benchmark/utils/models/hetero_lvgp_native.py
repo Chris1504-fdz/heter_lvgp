@@ -85,6 +85,41 @@ def _profile(Xfull, phi_full, Y, noise_std2, min_eig):
     return float(nll), dict(beta=beta, sigma2=sigma2, L=L, temp=temp, MTRinvM=MTRinvM)
 
 
+def _poly_features(Wn, degree):
+    """MATLAB build_poly_features: [1, W, W^2, ..., W^degree] + every pairwise cross term Wa*Wb."""
+    n, p = Wn.shape
+    cols = [np.ones((n, 1))]
+    for deg in range(1, degree + 1):
+        cols.append(Wn ** deg)
+    for a in range(p - 1):
+        for b in range(a + 1, p):
+            cols.append((Wn[:, a] * Wn[:, b]).reshape(-1, 1))
+    return np.hstack(cols)
+
+
+class _MatlabAleatoric:
+    """Pooled aleatoric log-variance model r(x) = exp(2*theta'Phi([x_cont, z(level)])) -- a faithful
+    port of MATLAB fit_aleatoric_polymodel: ONE ridge poly over ALL points, category entering through
+    its latent-z coordinates (not an independent poly per level). Fixes the ~4x noise inflation the
+    per-category Python poly produced on under-sampled levels, which broke ANPEI/HAEI/RAHBO."""
+    def __init__(self, X_cont, codes, y_var, z_mat, lv_index, degree=2, lam=1e-3):
+        self.z_mat = z_mat; self.lv_index = lv_index; self.degree = degree
+        W = np.hstack([X_cont, z_mat[codes]])
+        self.mu = W.mean(0); self.sd = W.std(0); self.sd[self.sd == 0] = 1.0
+        Wn = (W - self.mu) / self.sd
+        Phi = _poly_features(Wn, degree)
+        ls = 0.5 * np.log(np.maximum(np.asarray(y_var, float).ravel(), 1e-12))
+        self.theta = np.linalg.solve(Phi.T @ Phi + lam * np.eye(Phi.shape[1]), Phi.T @ ls)
+
+    def r(self, level, x_new):
+        X = _as_2d(x_new)
+        z = self.z_mat[self.lv_index[int(level)]]
+        W = np.hstack([X, np.repeat(z[None, :], X.shape[0], axis=0)])
+        Wn = (W - self.mu) / self.sd
+        ls = _poly_features(Wn, self.degree) @ self.theta
+        return np.maximum(np.exp(2 * ls), 1e-12)
+
+
 def _fixed_mask(p_quant, n_lvs):
     """MATLAB fixes the 2nd latent coord of the FIRST free level (index p_quant+1) at 0 for dim_z=2."""
     n = p_quant + DIM_Z * (n_lvs - 1)
@@ -149,33 +184,55 @@ class _LVGPNativeBase(BaseModel):
             val, _ = _profile(Xf, pf, Yn, noise_std2, min_eig)
             return val
 
-        rng = np.random.default_rng([seed, 7, k])      # deterministic starts, distinct per fit size
-        # continuation over the eps ladder: N_OPT random starts at eps[0], warm-start each smaller eps
+        # SLSQP multistart. Reaches the SAME optimum as MATLAB's fmincon('interior-point') (verified:
+        # nll -518.37, latent matches to ~0.01) but is robust to the bounds -- unlike projected
+        # L-BFGS-B, which slid the latent onto the z-edge and left native ~10 nll ABOVE MATLAB's
+        # optimum. (scipy's true interior-point, trust-constr, also matches but is ~14x slower.)
+        # Starts are scrambled-Sobol (MATLAB scrambles its Sobol too) over the FREE parameters (the
+        # fixed z2-of-level-2 = 0 gauge is held out); eps-ladder continuation warm-starts each smaller
+        # nugget. Finite differences kept -- MATLAB uses my_grad forward-differences, not analytic
+        # gradients (see PYTHON_LVGP_INTEGRATION.md "Path B" for the analytic-gradient option).
+        from scipy.stats import qmc
+        free = ~fixed
+        lb_f, ub_f = lb[free], ub[free]
+
+        def nll_free(hf):
+            h = np.zeros(n_hyper); h[free] = hf
+            return nll_only(h)
+
+        _box = list(zip(lb_f, ub_f))
+
+        def _opt(hf0):
+            # SLSQP (sequential quadratic programming): reaches the SAME optimum as MATLAB's
+            # interior-point fmincon (verified: nll -518.37, latent matches to 3 sig figs) but is
+            # ~14x cheaper than scipy's trust-constr interior-point. Robust to the bounds, so the
+            # latent no longer sticks to the z-edge the way projected L-BFGS-B did.
+            r = minimize(nll_free, hf0, method="SLSQP", bounds=_box,
+                         options=dict(maxiter=300, ftol=1e-9))
+            return r.x, float(r.fun)
+
+        _sseed = int(np.random.default_rng([seed, 7, k]).integers(1 << 31))
+        U = qmc.Sobol(int(free.sum()), scramble=True, seed=_sseed).random(N_OPT)
+        cand0 = lb_f + U * (ub_f - lb_f)
         best_by_eps = []
         warm = None
         for j, min_eig in enumerate(EPS_ALL):
-            starts = []
-            if j == 0:
-                U = rng.random((N_OPT, n_hyper))
-                cand = lb + U * (ub - lb)
-                cand[:, fixed] = 0.0
-                starts = list(cand)
+            starts = list(cand0) if j == 0 else []      # multistart at the first (largest) nugget
             if warm is not None:
-                starts = [warm] + starts               # continue the running best
-            best_h, best_v = None, np.inf
-            for h0 in starts:
+                starts = [warm] + starts                # continue the running best down the ladder
+            best_hf, best_v = None, np.inf
+            for hf0 in starts:
                 try:
-                    res = minimize(nll_only, h0, method="L-BFGS-B", bounds=bnds,
-                                   options=dict(maxiter=200, maxfun=2000))
-                    if res.fun < best_v:
-                        best_v, best_h = float(res.fun), res.x
+                    hx, hv = _opt(hf0)
                 except Exception:
                     continue
-            if best_h is None:                         # degenerate level: keep warm/mid start
-                best_h = warm if warm is not None else (lb + ub) / 2.0
-                best_v = nll_only(best_h)
-            warm = best_h
-            best_by_eps.append((best_v, best_h, min_eig))
+                if hv < best_v:
+                    best_v, best_hf = hv, hx
+            if best_hf is None:
+                best_hf = (lb_f + ub_f) / 2.0; best_v = nll_free(best_hf)
+            warm = best_hf
+            h_full = np.zeros(n_hyper); h_full[free] = best_hf
+            best_by_eps.append((best_v, h_full, min_eig))
 
         nll_b, h_b, eig_b = min(best_by_eps, key=lambda t: t[0])
         phi, zf = split(h_b)
@@ -208,8 +265,11 @@ class _LVGPNativeBase(BaseModel):
         fit = dict(Xfull=Xfull, phi_full=phi_full, beta=beta_p, sigma2=sigma2,
                    Lp=Lp, LpinvM=LpinvM, MTRinvM=MTRinvM_p, RinvPY=RinvPY,
                    xmin=xmin, span=span, ymin=ymin, yspan=yspan, scale2=scale2,
-                   zf=zf, n_lvs=n_lvs, p_quant=p_quant, lv_index=lv_index)
-        ale = AleatoricModels.fit(data_by_level) if needs_r else None
+                   zf=zf, phi=phi, nll=nll_b, eig=eig_b,
+                   n_lvs=n_lvs, p_quant=p_quant, lv_index=lv_index)
+        # MATLAB-style pooled aleatoric r(x) over [x_cont, latent-z] (not the shared per-category poly)
+        ale = (_MatlabAleatoric(Xq_raw, codes, v, _z_matrix(zf, n_lvs), lv_index)
+               if needs_r else None)
         return cls(fit, levels, ale)
 
     # ---- prediction (LVGP_predict_noise) -----------------------------------
