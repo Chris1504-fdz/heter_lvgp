@@ -20,6 +20,8 @@ class ModelInfo:
     cls: object = None          # python model class implementing the interface (None for matlab)
     matlab_name: str = ""       # id passed to matlab/study_driver.m (matlab models only)
     label: str = ""             # display label for plots
+    aux: bool = False           # auxiliary model (LVGP-validation only): excluded from the default
+                                # benchmark grid + progress counts; still runnable via --models
 
 
 MODELS = {
@@ -34,16 +36,32 @@ MODELS = {
 }
 
 
-# Optional: pytorch LVGP via the lvgp-bayes package. Guarded so engines without the package
-# (or a worker respawn mid-sweep) still load the 4 core models unchanged.
+# Python LVGP analogues of the MATLAB engines. The NATIVE port faithfully reproduces MATLAB's
+# LVGP_fit(_noise) treatment (min-max norm, noise-on-correlation, eps-ladder eigenvalue nugget,
+# profiled sigma2) -- it matches MATLAB and does not get stuck, unlike the lvgp-bayes wrapper whose
+# FixedNoiseGaussianLikelihood + standardization + horseshoe priors diverged. Native is the default.
+# aux=True: these are for the LVGP-vs-MATLAB validation study only. They are kept OUT of the default
+# benchmark grid (run.py) and the progress/leaderboard counts, so the 4-model completed problems do
+# not read as "half done". Run them explicitly with e.g. `--models lvgp_native heter_lvgp_native`.
+from .hetero_lvgp_native import LVGPNative, HeterLVGPNative
+MODELS["lvgp_native"] = ModelInfo("lvgp_native", "python", BLIND, cls=LVGPNative,
+                                  label="LVGP (native)", aux=True)
+MODELS["heter_lvgp_native"] = ModelInfo("heter_lvgp_native", "python", FULL, cls=HeterLVGPNative,
+                                        label="Hetero LVGP (native)", aux=True)
+
+# lvgp-bayes wrapper kept available (guarded) for A/B reference, but NOT the default python LVGP.
 try:
     from .lvgp_torch import LVGPTorch, HeterLVGPTorch
     MODELS["lvgp_torch"] = ModelInfo("lvgp_torch", "python", BLIND, cls=LVGPTorch,
-                                     label="LVGP (torch)")
+                                     label="LVGP (torch)", aux=True)
     MODELS["heter_lvgp_torch"] = ModelInfo("heter_lvgp_torch", "python", FULL,
-                                           cls=HeterLVGPTorch, label="Hetero LVGP (torch)")
+                                           cls=HeterLVGPTorch, label="Hetero LVGP (torch)", aux=True)
 except ImportError:
     pass
+
+
+# The core benchmark grid: the 4 models the sweep and all progress/leaderboard views count by default.
+BENCHMARK_MODELS = [m for m, mi in MODELS.items() if not mi.aux]
 
 
 def get(name) -> ModelInfo:

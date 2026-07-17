@@ -38,7 +38,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 RESULTS = os.path.join(HERE, "results")
 sys.path.insert(0, HERE)
 from utils import problems as P, acquisitions
-from utils.models import MODELS, get as get_model
+from utils.models import MODELS, BENCHMARK_MODELS, get as get_model
 
 MATLAB = "/data/zhq7531/MATLAB/bin/matlab"
 XVFB_BIN = "/data/zhq7531/MATLAB/sys/Xvfb/bin/glnxa64/Xvfb"
@@ -296,7 +296,8 @@ def collect():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--functions", nargs="*", default=None, help="default: all DEFINED problems")
-    ap.add_argument("--models", nargs="*", default=list(MODELS))
+    ap.add_argument("--models", nargs="*", default=list(BENCHMARK_MODELS))   # aux LVGP-validation
+                                                                             # models excluded by default
     ap.add_argument("--acqs", nargs="*", default=[a for a, _ in acquisitions.CONFIG_ORDER])
     ap.add_argument("--seeds", type=int, default=30)
     ap.add_argument("--num-iter", type=int, default=None,

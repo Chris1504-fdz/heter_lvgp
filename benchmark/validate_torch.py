@@ -28,8 +28,8 @@ from scipy.stats import wilcoxon, mannwhitneyu
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from utils import problems as P
 
-PAIRS = [("lvgp_torch", "standard_LVGP", ["ei", "lcb", "pi"]),
-         ("heter_lvgp_torch", "heter_LVGP", ["ei", "lcb", "pi", "haei", "anpei", "rahbo"])]
+PAIRS = [("lvgp_native", "standard_LVGP", ["ei", "lcb", "pi"]),
+         ("heter_lvgp_native", "heter_LVGP", ["ei", "lcb", "pi", "haei", "anpei", "rahbo"])]
 ALPHA = 0.05
 FUNCTION = "branin_hetero"
 
@@ -64,6 +64,8 @@ def _collect(root, model, acq, nrep):
         return {}
     out = {}
     for f in glob.glob(os.path.join(d, f"nrep{nrep:02d}", "seed*")):
+        if not f.endswith((".npz", ".mat")):          # skip .log and other sidecar files
+            continue
         try:
             c = _load(f)
             seed = int(np.ravel(c["meta"].item()["seed"] if hasattr(c["meta"], "item") else c["meta"]["seed"]))

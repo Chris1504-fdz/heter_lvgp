@@ -28,6 +28,9 @@ testing_lvgp_bayes/
 # --- archived old versions (moved into previous_ver/) ---
 previous_ver/
 STATUS.md
+
+# --- personal working notes (not for the shared repo) ---
+benchmark/PYTHON_LVGP_INTEGRATION.md
 # --- (optional) uncomment for a lean CODE-ONLY repo, dropping experiment outputs ---
 # **/results/
 # **/plots/
