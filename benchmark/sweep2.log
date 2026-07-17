@@ -586,3 +586,21 @@ shared Xvfb on :97 (pid 2880110)
 [467/2100] otl_circuit/standard_LVGP/pi/nrep10/seed02: ok
 [468/2100] otl_circuit/standard_LVGP/lcb/nrep10/seed01: ok
 [469/2100] otl_circuit/standard_LVGP/pi/nrep10/seed03: ok
+[470/2100] otl_circuit/standard_LVGP/ei/nrep10/seed02: ok
+[471/2100] otl_circuit/standard_LVGP/lcb/nrep10/seed02: ok
+[472/2100] otl_circuit/standard_LVGP/lcb/nrep10/seed03: ok
+[473/2100] otl_circuit/standard_LVGP/ei/nrep10/seed03: ok
+[474/2100] otl_circuit/standard_LVGP/pi/nrep10/seed04: ok
+[475/2100] otl_circuit/standard_LVGP/lcb/nrep10/seed04: ok
+[476/2100] otl_circuit/standard_LVGP/ei/nrep10/seed04: ok
+[477/2100] otl_circuit/standard_LVGP/ei/nrep10/seed05: ok
+[478/2100] golinski/heter_LVGP/ei/nrep10/seed03: ok(retry 2)
+[479/2100] otl_circuit/standard_LVGP/pi/nrep10/seed05: ok
+[480/2100] otl_circuit/standard_LVGP/lcb/nrep10/seed05: ok
+[481/2100] golinski/heter_LVGP/pi/nrep10/seed03: ok(retry 2)
+[482/2100] golinski/heter_LVGP/anpei_b0.8/nrep10/seed03: ok(retry 2)
+[483/2100] otl_circuit/heter_LVGP/lcb/nrep10/seed01: ok
+[484/2100] otl_circuit/heter_LVGP/pi/nrep10/seed01: ok
+[485/2100] otl_circuit/heter_LVGP/ei/nrep10/seed01: ok
+[486/2100] otl_circuit/heter_LVGP/haei_g0.5/nrep10/seed01: ok
+[487/2100] otl_circuit/heter_LVGP/pi/nrep10/seed02: ok
