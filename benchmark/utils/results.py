@@ -1622,3 +1622,110 @@ def mv_alpha_sweep(grid, alphas=(1, 5, 15), n_rep=10, functions=None):
     acq_ranks = (pd.DataFrame(rank_rows).pivot(index="acquisition", columns="alpha",
                                                values="mean_rank"))
     return per_problem, acq_ranks
+
+
+# ---------------------------------------------------------------------------
+# MODEL-QUALITY + DESIGN-ROBUSTNESS metrics (loop-light: computed from the STORED per-iteration
+# posterior at the incumbent recommendation -- mu/s/r_at_est @ X_min_est -- so no refitting, and far
+# less BO-loop confound than raw regret when comparing across the python/matlab engines).
+# ---------------------------------------------------------------------------
+
+def _rec_truth(run, spec, last_k):
+    """True f and true noise VARIANCE at the recommended design over the last_k iterations,
+    plus the stored posterior (mu, s, r) there."""
+    X = np.asarray(run["X_min_est"], float)[-last_k:]
+    mu = np.asarray(run["mu_at_est"], float)[-last_k:]
+    s = np.maximum(np.asarray(run["s_at_est"], float)[-last_k:], 1e-12)
+    r = np.asarray(run["r_at_est"], float)[-last_k:]
+    ft = np.array([float(np.ravel(spec.f_true_level(row[:-1], int(round(row[-1]))))[0]) for row in X])
+    st2 = np.array([float(np.ravel(spec.sigma_level(row[:-1], int(round(row[-1]))))[0]) ** 2 for row in X])
+    return ft, st2, mu, s, r
+
+
+def model_quality_table(grid, functions=None, n_rep=10, acqs=("ei", "lcb", "pi"), last_k=25):
+    """MODEL quality at the point that matters -- the incumbent recommendation -- per (problem, model),
+    averaged over seeds x acqs x the last `last_k` iterations.
+
+      MAE    mean |mu - f_true|                       surface accuracy (raw units)
+      RRMSE  RMSE / std(f_true over sampled points)   relative accuracy (comparable across problems)
+      cov90  frac(|mu - f_true| <= 1.645 s)           calibration; target 0.90 (over/under-confidence)
+      IS90   mean 90% interval score (Gneiting),      accuracy + calibration in one; normalized like
+             / std(f_true sampled)                    RRMSE; lower is better
+      nMAE   mean |r - sigma2_true| / mean sigma2_true noise-capture (noise-aware models; NaN for blind)
+
+    Default acqs = the three noise-blind ones ALL FOUR models run, so the comparison is apples-to-
+    apples; pass e.g. acqs=("haei","anpei","rahbo") for the noise-aware trio (3 models)."""
+    import pandas as pd
+    fns = functions or grid.functions()
+    rows = []
+    for fn in fns:
+        spec = P.get(fn)
+        for m in _ordered_models(grid):
+            acc = {k: [] for k in ("mae", "rrmse", "cov90", "is90", "nmae")}
+            for acf in acqs:
+                for run in grid.select(function=fn, model=m, acf=acf, n_rep=n_rep):
+                    try:
+                        ft, st2, mu, s, r = _rec_truth(run, spec, last_k)
+                    except Exception:
+                        continue
+                    err = mu - ft
+                    fs = float(np.std(np.asarray(run["f_true_sampled"], float))) or 1.0
+                    lo, hi = mu - 1.645 * s, mu + 1.645 * s
+                    is90 = (hi - lo) + 20.0 * (lo - ft) * (ft < lo) + 20.0 * (ft - hi) * (ft > hi)
+                    acc["mae"].append(np.mean(np.abs(err)))
+                    acc["rrmse"].append(np.sqrt(np.mean(err ** 2)) / fs)
+                    acc["cov90"].append(np.mean(np.abs(err) <= 1.645 * s))
+                    acc["is90"].append(np.mean(is90) / fs)
+                    if np.isfinite(r).any():           # noise-blind models store r = NaN
+                        acc["nmae"].append(float(np.nanmean(np.abs(r - st2))) / (st2.mean() or 1.0))
+            if acc["mae"]:
+                rows.append(dict(problem=fn, model=_mlabel(m),
+                                 MAE=np.mean(acc["mae"]), RRMSE=np.mean(acc["rrmse"]),
+                                 cov90=np.mean(acc["cov90"]), IS90=np.mean(acc["is90"]),
+                                 nMAE=np.mean(acc["nmae"]) if acc["nmae"] else np.nan))
+    df = pd.DataFrame(rows).set_index(["problem", "model"])
+    return df
+
+
+def model_quality_ranks(mq):
+    """Mean rank per model across problems, one row per metric (rank 1 = best). cov90 is ranked by
+    |cov90 - 0.90| (closest to nominal wins); everything else lower-is-better."""
+    import pandas as pd
+    ranks = {}
+    for col in mq.columns:
+        v = (mq[col] - 0.90).abs() if col == "cov90" else mq[col]
+        ranks[col] = v.groupby(level="problem").rank()
+    rk = pd.DataFrame(ranks).groupby(level="model").mean()
+    rk["mean_rank"] = rk.mean(1)
+    return rk.sort_values("mean_rank")
+
+
+def design_robustness_table(grid, functions=None, n_rep=10, acqs=None, alpha=None, center=np.median):
+    """ROBUST-DESIGN quality of the FINAL recommendation X_min_est[-1], per (problem, model):
+      f_true    true objective there (lower better)
+      sigma2    TRUE noise variance there (lower = more robust design)
+      MV        f_true + alpha * sigma2 (RAHBO mean-variance; the single robustness number)
+    center (default median) aggregates over seeds x acqs. acqs=None uses every acquisition each model
+    ran -- fine within one table but remember standard_LVGP only runs the blind three."""
+    import pandas as pd
+    a = MV_ALPHA if alpha is None else alpha
+    fns = functions or grid.functions()
+    rows = []
+    for fn in fns:
+        spec = P.get(fn)
+        for m in _ordered_models(grid):
+            f_l, s_l = [], []
+            for run in grid.select(function=fn, model=m, n_rep=n_rep):
+                if acqs is not None and run["acf"] not in acqs:
+                    continue
+                try:
+                    row = np.asarray(run["X_min_est"], float)[-1]
+                    f_l.append(float(np.ravel(spec.f_true_level(row[:-1], int(round(row[-1]))))[0]))
+                    s_l.append(float(np.ravel(spec.sigma_level(row[:-1], int(round(row[-1]))))[0]) ** 2)
+                except Exception:
+                    continue
+            if f_l:
+                f_c, s_c = float(center(f_l)), float(center(s_l))
+                rows.append(dict(problem=fn, model=_mlabel(m), f_true=f_c, sigma2=s_c,
+                                 MV=f_c + a * s_c))
+    return pd.DataFrame(rows).set_index(["problem", "model"])
