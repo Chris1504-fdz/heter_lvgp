@@ -297,6 +297,7 @@ def facet(grid, kind, functions=None, acf="ei", param=float("nan"), n_rep=10,
          'regret'   value - f*            (log axis when logy)
          'value'    best true value, with the f* horizontal line
          'sigma2'   noise variance at the incumbent best design
+         'mv'       MV regret: min-so-far of (f + MV_ALPHA*sigma^2) - MV*  (robustness convergence)
     """
     import matplotlib.pyplot as plt
     fns = functions or grid.functions()
@@ -321,6 +322,12 @@ def facet(grid, kind, functions=None, acf="ei", param=float("nan"), n_rep=10,
             _panel(ax, grid, fn, acf, param, n_rep,
                    lambda r, s: sigma2_at_best_traj(r, s, ground_truth),
                    "σ² at incumbent", logy, center=center)
+        elif kind == "mv":
+            mvstar = _mv_star(spec, MV_ALPHA)
+            _panel(ax, grid, fn, acf, param, n_rep,
+                   lambda r, s: _iter_slice(r, np.minimum.accumulate(_mv_sampled(r, s, MV_ALPHA)))[0]
+                   - mvstar,
+                   f"MV regret (α={MV_ALPHA:g})", logy, center=center)
         else:
             raise ValueError(f"unknown kind {kind!r}")
     for k in range(len(fns), nrow * ncol):
@@ -508,25 +515,38 @@ def _init_doe_run(grid, function, n_rep, seed):
     return None
 
 
+def _slice_X(spec, x1):
+    """(n, d) batch sweeping x1 with every other continuous dim held at its box midpoint --
+    the 1-D slice that lets the landscape/noise views work for d > 1 problems."""
+    b = np.atleast_2d(np.asarray(spec.bounds, float))
+    X = np.tile((b[:, 0] + b[:, 1]) / 2.0, (len(np.atleast_1d(x1)), 1))
+    X[:, 0] = np.atleast_1d(x1)
+    return X
+
+
 def problem_landscape(function, grid=None, n_rep=10, seed=1, ax=None, show_doe=True):
     """The problem itself: noise-free f(x1|level) per category (coloured by level) with the true noise
     band f ± σ shaded, the global optimum starred, and -- if a matching cell exists -- the shared
     initial DOE (design points + their noisy replicates) overlaid so you see what every model started
-    from."""
+    from. For d > 1 problems the curves are the x1 slice through the box midpoint (DOE overlay is
+    1-D-only and skipped)."""
     import matplotlib.pyplot as plt
     spec = P.get(function)
     if ax is None:
         _, ax = plt.subplots(figsize=(7, 5))
-    x = np.linspace(spec.lb, spec.ub, 400)
+    b = np.atleast_2d(np.asarray(spec.bounds, float))
+    x = np.linspace(b[0, 0], b[0, 1], 400)
+    Xq = x if spec.d == 1 else _slice_X(spec, x)
     for lv in spec.levels:
         c = plt.cm.tab10((lv - 1) % 10)
-        f = spec.f_true_level(x, lv); sig = spec.sigma_level(x, lv)
+        f = spec.f_true_level(Xq, lv); sig = spec.sigma_level(Xq, lv)
         ax.plot(x, f, color=c, lw=1.6, label=f"level {lv}", zorder=3)
         ax.fill_between(x, f - sig, f + sig, color=c, alpha=0.10, zorder=1)   # true ±1σ noise band
     lv_opt, x_opt = P.true_opt_location(spec)
-    ax.scatter([x_opt], [spec.f_true_level(x_opt, lv_opt)], marker="*", s=240, c="crimson",
-               edgecolor="k", lw=0.6, zorder=6, label=f"opt (lv {lv_opt})")
-    if show_doe and grid is not None:
+    x_opt_v = np.ravel(np.atleast_1d(x_opt))
+    ax.scatter([x_opt_v[0]], [float(np.ravel(spec.f_true_level(x_opt, lv_opt))[0])], marker="*",
+               s=240, c="crimson", edgecolor="k", lw=0.6, zorder=6, label=f"opt (lv {lv_opt})")
+    if show_doe and grid is not None and spec.d == 1:
         run = _init_doe_run(grid, function, n_rep, seed)
         if run is not None:
             Xi, Yr = run["X_init"], run["Y_rep_init"]
@@ -534,8 +554,11 @@ def problem_landscape(function, grid=None, n_rep=10, seed=1, ax=None, show_doe=T
                 c = plt.cm.tab10((int(Xi[i, 1]) - 1) % 10)
                 ax.scatter(np.full(Yr.shape[1], Xi[i, 0]), Yr[i], s=10, color=c, alpha=0.35, zorder=4)
                 ax.scatter([Xi[i, 0]], [Yr[i].mean()], s=55, color=c, edgecolor="k", lw=0.5, zorder=5)
+    slice_note = "" if spec.d == 1 else f"  (x1 slice, x2..x{spec.d} at box mid; ★ = true opt value)"
     ax.set_xlabel("x1"); ax.set_ylabel("f")
-    ax.set_title(f"{function}: landscape + initial DOE (seed {seed})", fontsize=10)
+    ax.set_title(f"{function}: landscape"
+                 + (" + initial DOE (seed %d)" % seed if spec.d == 1 else "") + slice_note,
+                 fontsize=10)
     ax.grid(alpha=0.3); ax.legend(fontsize=7, ncol=2)
     return ax
 
@@ -548,17 +571,20 @@ def noise_per_level(function, ax=None, as_variance=False, mark_opt=True):
     spec = P.get(function)
     if ax is None:
         _, ax = plt.subplots(figsize=(7, 5))
-    x = np.linspace(spec.lb, spec.ub, 400)
+    b = np.atleast_2d(np.asarray(spec.bounds, float))
+    x = np.linspace(b[0, 0], b[0, 1], 400)
+    Xq = x if spec.d == 1 else _slice_X(spec, x)
     for lv in spec.levels:
         c = plt.cm.tab10((lv - 1) % 10)
-        s = spec.sigma_level(x, lv)
+        s = spec.sigma_level(Xq, lv)
         ax.plot(x, s ** 2 if as_variance else s, color=c, lw=1.8, label=f"level {lv}", zorder=3)
     if mark_opt:
         lv_opt, x_opt = P.true_opt_location(spec)
-        ax.axvline(x_opt, color="crimson", ls="--", lw=1, zorder=2,
-                   label=f"optimum x1 (lv {lv_opt})")
+        ax.axvline(float(np.ravel(np.atleast_1d(x_opt))[0]), color="crimson", ls="--", lw=1,
+                   zorder=2, label=f"optimum x1 (lv {lv_opt})")
+    slice_note = "" if spec.d == 1 else f"  (x1 slice, x2..x{spec.d} at box mid)"
     ax.set_xlabel("x1"); ax.set_ylabel("σ² true noise" if as_variance else "σ true noise std")
-    ax.set_title(f"{function}: heteroscedastic noise per level", fontsize=10)
+    ax.set_title(f"{function}: heteroscedastic noise per level{slice_note}", fontsize=10)
     ax.grid(alpha=0.3); ax.legend(fontsize=7, ncol=2)
     return ax
 
@@ -661,10 +687,12 @@ def sampling_trajectory(grid, function, acf="ei", param=float("nan"), n_rep=10, 
         it = np.arange(len(X)) - n0 + 1                       # <=0 initial DOE, >0 BO iterations
         cols = [plt.cm.tab10((int(l) - 1) % 10) for l in X[:, -1]]
         ax.scatter(it, X[:, 0], c=cols, s=20, edgecolor="k", lw=0.2, zorder=3)
-        ax.axhline(x_opt, color="crimson", ls="--", lw=1, zorder=2)
+        ax.axhline(float(np.ravel(np.atleast_1d(x_opt))[0]),   # d>1: x_opt is a vector; show its x1
+                   color="crimson", ls="--", lw=1, zorder=2)
         ax.axvline(0.5, color="grey", ls=":", lw=1, zorder=2)
+        b0 = np.atleast_2d(np.asarray(spec.bounds, float))[0]
         ax.set_xlabel("BO iteration"); ax.set_ylabel("x1")
-        ax.set_ylim(spec.lb, spec.ub)
+        ax.set_ylim(b0[0], b0[1])
         ax.set_title(f"{_mlabel(m)}  (final regret "
                      f"{_true_best_traj(run, spec)[-1] - P.ground_truth_min(spec):.3f})", fontsize=9)
         ax.grid(alpha=0.3)
@@ -808,11 +836,24 @@ def all_problem_reports(grid, functions=None, save_root="plots", acf="ei", param
 LVGP_MODELS = ("standard_LVGP", "heter_LVGP")
 
 
+def _box_candidates(spec, n=4000):
+    """Deterministic candidate set over the continuous box: dense linspace at d=1, unscrambled Sobol
+    at d>1 -- the d-general stand-in everywhere a 1-D 'linspace over the domain' used to live."""
+    b = np.atleast_2d(np.asarray(spec.bounds, float))
+    if spec.d == 1:
+        return np.linspace(b[0, 0], b[0, 1], n).reshape(-1, 1)
+    from scipy.stats import qmc
+    m = int(np.ceil(np.log2(max(n, 256))))
+    u = qmc.Sobol(spec.d, scramble=False).random(2 ** m)
+    return b[:, 0] + u * (b[:, 1] - b[:, 0])
+
+
 def _level_curve_dist(spec, n=300):
     """Ground-truth distance between categorical levels = RMS gap between their noise-free curves
-    f(x1│level) over the domain. This is the geometry a good latent embedding should reproduce."""
-    x = np.linspace(spec.lb, spec.ub, n)
-    F = np.array([spec.f_true_level(x, lv) for lv in spec.levels])       # (L, n)
+    f(x│level) over the domain (dense 1-D grid; Sobol sample of the box for d > 1). This is the
+    geometry a good latent embedding should reproduce."""
+    x = _box_candidates(spec, n)
+    F = np.array([np.ravel(spec.f_true_level(x, lv)) for lv in spec.levels])   # (L, n)
     L = len(spec.levels)
     D = np.zeros((L, L))
     for i in range(L):
@@ -1081,12 +1122,23 @@ _MV_STAR = {}
 
 
 def _mv_star(spec, alpha, n=4000):
-    """True mean-variance optimum  min_{x,ℓ} [ f(x,ℓ) + alpha*sigma(x,ℓ)^2 ]  (cached per (problem, alpha))."""
+    """True mean-variance optimum  min_{x,ℓ} [ f(x,ℓ) + alpha*sigma(x,ℓ)^2 ]  (cached per (problem,
+    alpha)). d=1: dense grid (effectively exact). d>1: Sobol scan of the box, anchored by the known
+    f-optimum location -- an upper bound on the true MV*, shared by every model so comparisons stand."""
     key = (spec.name, alpha)
     if key not in _MV_STAR:
-        x = np.linspace(spec.lb, spec.ub, n)
-        _MV_STAR[key] = min(float((spec.f_true_level(x, lv) + alpha * spec.sigma_level(x, lv) ** 2).min())
-                            for lv in spec.levels)
+        x = _box_candidates(spec, n)
+        best = min(float((np.ravel(spec.f_true_level(x, lv))
+                          + alpha * np.ravel(spec.sigma_level(x, lv)) ** 2).min())
+                   for lv in spec.levels)
+        try:                                            # anchor: MV at the known f* location
+            lv0, x0 = P.true_opt_location(spec)
+            mv0 = (float(np.ravel(spec.f_true_level(x0, lv0))[0])
+                   + alpha * float(np.ravel(spec.sigma_level(x0, lv0))[0]) ** 2)
+            best = min(best, mv0)
+        except Exception:
+            pass
+        _MV_STAR[key] = best
     return _MV_STAR[key]
 
 
@@ -1581,12 +1633,12 @@ def mv_alpha_sweep(grid, alphas=(1, 5, 15), n_rep=10, functions=None):
             ranks = {acquisitions.label(a, p): [] for a, p in acquisitions.CONFIG_ORDER}
             for fn in fns:
                 spec = P.get(fn); fstar = P.ground_truth_min(spec)
-                x = np.linspace(spec.lb, spec.ub, 6001); best_star = (np.inf, None, None)
+                x = _box_candidates(spec, 6001); best_star = (np.inf, None, None)
                 for lv in spec.levels:
-                    mv = spec.f_true_level(x, lv) + alpha * spec.sigma_level(x, lv) ** 2
+                    mv = np.ravel(spec.f_true_level(x, lv)) + alpha * np.ravel(spec.sigma_level(x, lv)) ** 2
                     i = int(mv.argmin())
                     if mv[i] < best_star[0]:
-                        best_star = (float(mv[i]), lv, float(x[i]))
+                        best_star = (float(mv[i]), lv, float(np.atleast_2d(x)[i, 0]))
                 best = (np.inf, "")
                 for m in _ordered_models(grid):
                     for a, p in acquisitions.CONFIG_ORDER:
@@ -1729,3 +1781,362 @@ def design_robustness_table(grid, functions=None, n_rep=10, acqs=None, alpha=Non
                 rows.append(dict(problem=fn, model=_mlabel(m), f_true=f_c, sigma2=s_c,
                                  MV=f_c + a * s_c))
     return pd.DataFrame(rows).set_index(["problem", "model"])
+
+
+def robustness_landscape(grid, function, models=None, acqs=("haei", "anpei", "rahbo"),
+                         n_rep=10, ngrid=400, ncol=3):
+    """THE robustness picture for 1-D problems: per categorical level, the true f(x) curve with its
+    +/-2sigma(x) noise band, and a marker at every FINAL recommended design (marker = model). A robust
+    method's markers sit in QUIET minima (narrow band); a noise-blind one happily recommends the
+    lower-but-noisy twin. Global optimum starred; per-level MV optimum (f + MV_ALPHA*sigma^2) marked.
+    Only meaningful for spec.d == 1."""
+    import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
+    spec = P.get(function)
+    if spec.d != 1:
+        raise ValueError(f"{function} has d={spec.d}; landscape view is for 1-D problems")
+    models = models or _ordered_models(grid)
+    xs = np.linspace(spec.lb, spec.ub, ngrid)
+    nlv = len(spec.levels)
+    nrow = (nlv + ncol - 1) // ncol
+    fig, axes = plt.subplots(nrow, ncol, figsize=(4.6 * ncol, 3.4 * nrow), squeeze=False)
+    # global optimum (for the star)
+    glob = (np.inf, None, None)
+    curves = {}
+    for lv in spec.levels:
+        f = np.array([float(np.ravel(spec.f_true_level(np.array([[x]]), lv))[0]) for x in xs])
+        s = np.array([float(np.ravel(spec.sigma_level(np.array([[x]]), lv))[0]) for x in xs])
+        curves[lv] = (f, s)
+        if f.min() < glob[0]:
+            glob = (float(f.min()), float(xs[f.argmin()]), lv)
+    for ax, lv in zip(axes.ravel(), spec.levels):
+        f, s = curves[lv]
+        ax.plot(xs, f, "k-", lw=1.4, zorder=2, label="true f")
+        ax.fill_between(xs, f - 2 * s, f + 2 * s, color="orange", alpha=0.25, zorder=1,
+                        label="±2σ noise band")
+        mv = f + MV_ALPHA * s ** 2
+        ax.axvline(xs[mv.argmin()], color="green", ls=":", lw=1.2, zorder=2)
+        if lv == glob[2]:
+            ax.scatter([glob[1]], [glob[0]], marker="*", s=220, color="gold", edgecolor="k",
+                       zorder=5, label="global optimum")
+        for m in models:
+            pts = []
+            for run in grid.select(function=function, model=m, n_rep=n_rep):
+                if acqs is not None and run["acf"] not in acqs:
+                    continue
+                row = np.asarray(run["X_min_est"], float)[-1]
+                if int(round(row[-1])) == lv:
+                    x0 = float(row[0])
+                    pts.append((x0, float(np.ravel(spec.f_true_level(np.array([[x0]]), lv))[0])))
+            if pts:
+                p = np.array(pts)
+                ax.scatter(p[:, 0], p[:, 1], marker=MODEL_STYLES.get(m, ("-", "o"))[1], s=55,
+                           color=MODEL_COLORS.get(m, "C7"), edgecolor="k", lw=0.5, alpha=0.85,
+                           zorder=4)
+        ax.set_title(f"level {lv}" + ("  ← global opt" if lv == glob[2] else ""), fontsize=9)
+        ax.set_xlabel("x"); ax.set_ylabel("f")
+        ax.grid(alpha=0.25)
+    for k in range(nlv, nrow * ncol):
+        axes.ravel()[k].axis("off")
+    mh = [Line2D([0], [0], lw=0, marker=MODEL_STYLES.get(m, ("-", "o"))[1],
+                 color=MODEL_COLORS.get(m, "C7"), markeredgecolor="k", label=_mlabel(m))
+          for m in models]
+    extra = [Line2D([0], [0], color="green", ls=":", label=f"per-level MV opt (α={MV_ALPHA:g})"),
+             Line2D([0], [0], color="orange", lw=6, alpha=0.35, label="±2σ noise band")]
+    fig.legend(handles=mh + extra, loc="lower center", ncol=min(6, len(mh) + 2), fontsize=8,
+               frameon=False, bbox_to_anchor=(0.5, -0.02))
+    acq_lab = "all acqs" if acqs is None else "/".join(acqs)
+    fig.suptitle(f"{function}: where each model's FINAL recommendation lands ({acq_lab}, n_rep={n_rep})\n"
+                 "robust = markers on quiet minima (narrow band), not the lower-but-noisy twin",
+                 y=1.02, fontsize=11)
+    fig.tight_layout()
+    return fig
+
+
+def mv_landscape(function, alphas=(0.0, 1.0, 5.0, 15.0), ngrid=600, ncol=5, zoom=True, pad=0.18):
+    """GROUND-TRUTH robustness landscape (the RAHBO Fig-1 view): per categorical level, the
+    mean-variance objective MV(x) = f(x) + alpha*sigma^2(x) for several risk weights alpha
+    (alpha = 0 is the plain objective f).
+
+    Markers: a CIRCLE on each curve = that alpha's best design WITHIN the level (per-level argmin);
+    the STAR = the GLOBAL optimum across all levels for that alpha. Watch the star's level change as
+    alpha grows -- that is the robustness trap.
+
+    zoom=True (default) crops each panel to the neighbourhood of the minima (x window around the
+    argmins +/- pad*domain; y limited to the curves inside that window), so the markers are readable
+    instead of being squashed by the noisy region's blow-up. zoom=False shows the full domain.
+    1-D problems only (d == 1)."""
+    import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
+    spec = P.get(function)
+    if spec.d != 1:
+        raise ValueError(f"{function} has d={spec.d}; mv_landscape is for 1-D problems")
+    xs = np.linspace(spec.lb, spec.ub, ngrid)
+    span = spec.ub - spec.lb
+    nlv = len(spec.levels)
+    nrow = (nlv + ncol - 1) // ncol
+    fig, axes = plt.subplots(nrow, ncol, figsize=(3.1 * ncol, 4.4 * nrow), squeeze=False)
+    acolors = plt.cm.plasma(np.linspace(0.05, 0.8, len(alphas)))
+    # global MV optimum per alpha (level, x) for the suptitle annotation
+    glob = {}
+    for a in alphas:
+        best = (np.inf, None, None)
+        for lv in spec.levels:
+            f = np.ravel(spec.f_true_level(xs, lv)); s = np.ravel(spec.sigma_level(xs, lv))
+            mv = f + a * s ** 2
+            i = int(mv.argmin())
+            if mv[i] < best[0]:
+                best = (float(mv[i]), lv, float(xs[i]))
+        glob[a] = best
+    for ax, lv in zip(axes.ravel(), spec.levels):
+        f = np.ravel(spec.f_true_level(xs, lv)); s = np.ravel(spec.sigma_level(xs, lv))
+        mins_x, mins_y = [], []
+        for a, c in zip(alphas, acolors):
+            mv = f + a * s ** 2
+            lab = "f(x)  (α=0)" if a == 0 else f"MV, α={a:g}"
+            ax.plot(xs, mv, color=c, lw=1.7, label=lab, zorder=2)
+            i = int(mv.argmin())
+            mins_x.append(float(xs[i])); mins_y.append(float(mv[i]))
+            star = (glob[a][1] == lv and abs(glob[a][2] - xs[i]) < 1e-9)
+            ax.scatter([xs[i]], [mv[i]], marker="*" if star else "o", s=260 if star else 80,
+                       color=c, edgecolor="k", lw=0.8, zorder=4)
+        if zoom:
+            # x: window around the union of the per-level argmins; y: curves inside that window only
+            x_lo = max(spec.lb, min(mins_x) - pad * span)
+            x_hi = min(spec.ub, max(mins_x) + pad * span)
+            w = (xs >= x_lo) & (xs <= x_hi)
+            y_all = np.concatenate([(f + a * s ** 2)[w] for a in alphas])
+            y_lo, y_hi = float(y_all.min()), float(y_all.max())
+            ypad = 0.08 * (y_hi - y_lo or 1.0)
+            ax.set_xlim(x_lo, x_hi); ax.set_ylim(y_lo - ypad, y_hi + ypad)
+        ax.set_title(f"level {lv}", fontsize=9)
+        ax.set_xlabel("x"); ax.set_ylabel("MV")
+        ax.grid(alpha=0.25)
+    for k in range(nlv, nrow * ncol):
+        axes.ravel()[k].axis("off")
+    handles = [Line2D([0], [0], color=c, lw=2,
+                      label=("f(x)  (α=0)" if a == 0 else f"MV, α={a:g}")
+                      + f"  → opt: lv{glob[a][1]}, x={glob[a][2]:.2f}")
+               for a, c in zip(alphas, acolors)]
+    handles.append(Line2D([0], [0], lw=0, marker="o", color="0.4", markersize=8,
+                          label="circle = best design WITHIN this level (that α)"))
+    handles.append(Line2D([0], [0], lw=0, marker="*", color="k", markersize=13,
+                          label="star = GLOBAL optimum across levels (that α)"))
+    fig.legend(handles=handles, loc="lower center", ncol=2, fontsize=8, frameon=False,
+               bbox_to_anchor=(0.5, -0.06))
+    fig.suptitle(f"{function}: GROUND-TRUTH robustness landscape MV(x) = f + α·σ²"
+                 + ("  (zoomed to the minima region)" if zoom else "") + "\n"
+                 "circle = per-level optimum, star = global; the star's LEVEL moves as α grows",
+                 y=1.03, fontsize=11)
+    fig.tight_layout()
+    return fig
+
+
+def mv_optima_table(functions=None, alphas=(0.0, 1.0, 5.0, 15.0), ngrid=4001):
+    """THE answer to 'which design is the ground-truth most-robust': for each problem and alpha, the
+    global argmin of MV(x,l) = f + alpha*sigma^2 -- its level, x, f value, noise sigma^2, and MV.
+    alpha = 0 row is the nominal optimum; where level/x changes down the column, robustness genuinely
+    relocates the optimum (the problems designed with a noisy-twin trap show it here)."""
+    import pandas as pd
+    fns = functions or [f for f in P.defined_problems()]
+    rows = []
+    for fn in fns:
+        spec = P.get(fn)
+        cand = _box_candidates(spec, ngrid)
+        for a in alphas:
+            best = (np.inf, None, None, None, None)
+            for lv in spec.levels:
+                f = np.ravel(spec.f_true_level(cand, lv)); s = np.ravel(spec.sigma_level(cand, lv))
+                mv = f + a * s ** 2
+                i = int(mv.argmin())
+                if mv[i] < best[0]:
+                    best = (float(mv[i]), lv, float(np.atleast_2d(cand)[i, 0]), float(f[i]),
+                            float(s[i] ** 2))
+            rows.append(dict(problem=fn, alpha=a, level=best[1], x1=round(best[2], 3),
+                             f_true=round(best[3], 4), sigma2=round(best[4], 4),
+                             MV=round(best[0], 4)))
+    return pd.DataFrame(rows).set_index(["problem", "alpha"])
+
+
+# ---------------------------------------------------------------------------
+# Hyperparameter-free robustness views: ground-truth Pareto front, percentile framing,
+# and the quantile (q_tau) landscape -- companions to the alpha-dependent MV metric.
+# ---------------------------------------------------------------------------
+
+def _design_cloud(spec, n=3000):
+    """Ground-truth (f, sigma^2) for a dense deterministic sample of the design space, all levels.
+    Returns X (n_tot, d), lv (n_tot,), f (n_tot,), s2 (n_tot,)."""
+    cand = _box_candidates(spec, n)
+    Xs, Ls, Fs, Ss = [], [], [], []
+    for lv in spec.levels:
+        f = np.ravel(spec.f_true_level(cand, lv))
+        s = np.ravel(spec.sigma_level(cand, lv))
+        Xs.append(np.atleast_2d(cand)); Ls.append(np.full(len(f), lv))
+        Fs.append(f); Ss.append(s ** 2)
+    return np.vstack(Xs), np.concatenate(Ls), np.concatenate(Fs), np.concatenate(Ss)
+
+
+def _pareto_mask(f, s2):
+    """Non-dominated mask for minimizing BOTH f and s2 (O(n log n): sort by f, sweep min s2)."""
+    order = np.argsort(f, kind="stable")
+    mask = np.zeros(len(f), bool)
+    best_s2 = np.inf
+    for i in order:
+        if s2[i] < best_s2 - 1e-15:
+            mask[i] = True
+            best_s2 = s2[i]
+    return mask
+
+
+def pareto_plot(grid, function, models=None, acqs=("haei", "anpei", "rahbo"), n_rep=10,
+                n=3000, f_zoom_pct=70, ax=None):
+    """HYPERPARAMETER-FREE robustness picture: the ground-truth (f, sigma^2) cloud of ALL designs
+    (grey, per level tint), its PARETO FRONT (black steps -- designs where nothing is both better AND
+    quieter), and each model's FINAL recommendations overlaid (marker = model). A recommendation ON
+    the front is optimal for SOME risk preference; one dominated (up-right of the front) is worse AND
+    noisier than an available alternative -- indefensible at any alpha. Every MV alpha merely picks
+    one point along this front, so this one picture subsumes the whole alpha sweep.
+    f axis zoomed to the best f_zoom_pct percent of designs (the rest are irrelevant)."""
+    import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
+    spec = P.get(function)
+    X, lv_arr, f, s2 = _design_cloud(spec, n)
+    front = _pareto_mask(f, s2)
+    if ax is None:
+        _, ax = plt.subplots(figsize=(7.5, 6))
+    for lv in spec.levels:
+        m = lv_arr == lv
+        ax.scatter(f[m], s2[m], s=6, color=plt.cm.tab10((lv - 1) % 10), alpha=0.15, lw=0, zorder=1)
+    fp = np.argsort(f[front])
+    ax.step(f[front][fp], s2[front][fp], where="post", color="k", lw=2, zorder=3,
+            label="Pareto front (ground truth)")
+    # nominal optimum marker
+    ax.scatter([f.min()], [s2[f.argmin()]], marker="*", s=240, c="gold", edgecolor="k",
+               zorder=6, label="nominal optimum (min f)")
+    models = models or _ordered_models(grid)
+    for m in models:
+        pts = []
+        for run in grid.select(function=function, model=m, n_rep=n_rep):
+            if acqs is not None and run["acf"] not in acqs:
+                continue
+            row = np.asarray(run["X_min_est"], float)[-1]
+            lv = int(round(row[-1]))
+            pts.append((float(np.ravel(spec.f_true_level(row[:-1], lv))[0]),
+                        float(np.ravel(spec.sigma_level(row[:-1], lv))[0]) ** 2))
+        if pts:
+            p = np.array(pts)
+            ax.scatter(p[:, 0], p[:, 1], marker=MODEL_STYLES.get(m, ("-", "o"))[1], s=70,
+                       color=MODEL_COLORS.get(m, "C7"), edgecolor="k", lw=0.6, alpha=0.9, zorder=5,
+                       label=_mlabel(m))
+    f_hi = np.percentile(f, f_zoom_pct)
+    ax.set_xlim(f.min() - 0.03 * (f_hi - f.min()), f_hi)
+    in_win = f <= f_hi
+    ax.set_ylim(-0.03 * np.percentile(s2[in_win], 99), np.percentile(s2[in_win], 99))
+    ax.set_xlabel("true f at recommendation (lower = better)")
+    ax.set_ylabel("true σ² at recommendation (lower = quieter)")
+    acq_lab = "all acqs" if acqs is None else "/".join(acqs)
+    ax.set_title(f"{function}: ground-truth Pareto front + final recommendations ({acq_lab})\n"
+                 "on-front = optimal for SOME risk weight; up-right of front = dominated",
+                 fontsize=10)
+    ax.grid(alpha=0.3); ax.legend(fontsize=7, loc="upper right")
+    return ax
+
+
+def percentile_framing(grid, functions=None, n_rep=10, acqs=("haei", "anpei", "rahbo"),
+                       n=3000, center=np.median):
+    """The 'best x% / quietest y%' table: each model's FINAL recommendation ranked against the WHOLE
+    ground-truth design space -- f_pct = fraction of all designs with LOWER true f (0 = the best
+    design there is), s2_pct = fraction QUIETER. Percentiles are unit-free and hyperparameter-free,
+    so they read the same across problems: 'top 2% performance, quietest 15%'."""
+    import pandas as pd
+    fns = functions or grid.functions()
+    rows = []
+    for fn in fns:
+        spec = P.get(fn)
+        _, _, f_all, s2_all = _design_cloud(spec, n)
+        for m in _ordered_models(grid):
+            fp, sp = [], []
+            for run in grid.select(function=fn, model=m, n_rep=n_rep):
+                if acqs is not None and run["acf"] not in acqs:
+                    continue
+                row = np.asarray(run["X_min_est"], float)[-1]
+                lv = int(round(row[-1]))
+                fr = float(np.ravel(spec.f_true_level(row[:-1], lv))[0])
+                s2r = float(np.ravel(spec.sigma_level(row[:-1], lv))[0]) ** 2
+                fp.append(100.0 * np.mean(f_all < fr))
+                sp.append(100.0 * np.mean(s2_all < s2r))
+            if fp:
+                rows.append(dict(problem=fn, model=_mlabel(m),
+                                 f_pct=round(float(center(fp)), 1),
+                                 sigma2_pct=round(float(center(sp)), 1)))
+    return pd.DataFrame(rows).set_index(["problem", "model"])
+
+
+def quantile_landscape(function, taus=(0.5, 0.9, 0.99), ngrid=600, ncol=5, zoom=True, pad=0.18):
+    """Quantile analogue of mv_landscape with an INTERPRETABLE knob: q_tau(x) = f(x) + z_tau*sigma(x)
+    is the value a single evaluation of design x will beat with probability tau ('the outcome you
+    are worse than only (1-tau) of the time'). tau = 0.5 is the median = f itself; higher tau =
+    more risk-averse. Unlike MV's alpha (an exchange rate with no natural scale), tau is a
+    probability. Circles/stars as in mv_landscape. 1-D problems only."""
+    import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
+    from scipy.stats import norm
+    spec = P.get(function)
+    if spec.d != 1:
+        raise ValueError(f"{function} has d={spec.d}; quantile_landscape is for 1-D problems")
+    xs = np.linspace(spec.lb, spec.ub, ngrid)
+    span = spec.ub - spec.lb
+    zvals = [float(norm.ppf(t)) for t in taus]
+    nlv = len(spec.levels)
+    nrow = (nlv + ncol - 1) // ncol
+    fig, axes = plt.subplots(nrow, ncol, figsize=(3.1 * ncol, 4.4 * nrow), squeeze=False)
+    tcolors = plt.cm.viridis(np.linspace(0.0, 0.75, len(taus)))
+    glob = {}
+    for t, z in zip(taus, zvals):
+        best = (np.inf, None, None)
+        for lv in spec.levels:
+            q = np.ravel(spec.f_true_level(xs, lv)) + z * np.ravel(spec.sigma_level(xs, lv))
+            i = int(q.argmin())
+            if q[i] < best[0]:
+                best = (float(q[i]), lv, float(xs[i]))
+        glob[t] = best
+    for ax, lv in zip(axes.ravel(), spec.levels):
+        f = np.ravel(spec.f_true_level(xs, lv)); s = np.ravel(spec.sigma_level(xs, lv))
+        mins_x = []
+        for t, z, c in zip(taus, zvals, tcolors):
+            q = f + z * s
+            ax.plot(xs, q, color=c, lw=1.7, zorder=2)
+            i = int(q.argmin())
+            mins_x.append(float(xs[i]))
+            star = (glob[t][1] == lv and abs(glob[t][2] - xs[i]) < 1e-9)
+            ax.scatter([xs[i]], [q[i]], marker="*" if star else "o", s=260 if star else 80,
+                       color=c, edgecolor="k", lw=0.8, zorder=4)
+        if zoom:
+            x_lo = max(spec.lb, min(mins_x) - pad * span)
+            x_hi = min(spec.ub, max(mins_x) + pad * span)
+            w = (xs >= x_lo) & (xs <= x_hi)
+            y_all = np.concatenate([(f + z * s)[w] for z in zvals])
+            y_lo, y_hi = float(y_all.min()), float(y_all.max())
+            ypad = 0.08 * (y_hi - y_lo or 1.0)
+            ax.set_xlim(x_lo, x_hi); ax.set_ylim(y_lo - ypad, y_hi + ypad)
+        ax.set_title(f"level {lv}", fontsize=9)
+        ax.set_xlabel("x"); ax.set_ylabel("q_τ")
+        ax.grid(alpha=0.25)
+    for k in range(nlv, nrow * ncol):
+        axes.ravel()[k].axis("off")
+    handles = [Line2D([0], [0], color=c, lw=2,
+                      label=(f"τ={t:g}" + ("  (median = f)" if abs(t - 0.5) < 1e-12 else "")
+                             + f"  → opt: lv{glob[t][1]}, x={glob[t][2]:.2f}"))
+               for t, c in zip(taus, tcolors)]
+    handles.append(Line2D([0], [0], lw=0, marker="o", color="0.4", markersize=8,
+                          label="circle = best WITHIN level"))
+    handles.append(Line2D([0], [0], lw=0, marker="*", color="k", markersize=13,
+                          label="star = GLOBAL optimum (that τ)"))
+    fig.legend(handles=handles, loc="lower center", ncol=2, fontsize=8, frameon=False,
+               bbox_to_anchor=(0.5, -0.06))
+    fig.suptitle(f"{function}: quantile landscape  q_τ(x) = f + z_τ·σ"
+                 + ("  (zoomed to the minima region)" if zoom else "") + "\n"
+                 "'the value one evaluation beats with probability τ' — τ is a PROBABILITY, not an exchange rate",
+                 y=1.03, fontsize=11)
+    fig.tight_layout()
+    return fig
