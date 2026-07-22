@@ -1456,7 +1456,7 @@ model) combination for that problem. Lower is better for both metrics.
 
 
 def export_latex_tables(grid, out_dir="latex", n_reps=(3, 10), functions=None, ground_truth=True,
-                        metrics=("regret", "noise", "mv"), compile_pdf=False):
+                        metrics=("regret", "noise", "mv"), compile_pdf=False, suffix=""):
     """Write one .tex table per {metric} × {n_rep} (same data as acq_method_tables.xlsx) plus a
     main.tex that \\input's them all. Returns the list of files written. compile_pdf tries pdflatex."""
     import os
@@ -1475,21 +1475,24 @@ def export_latex_tables(grid, out_dir="latex", n_reps=(3, 10), functions=None, g
                    "($n_{\\mathrm{rep}}=%d$, mean $\\pm$ sd over seeds)." % (desc[metric], nr))
             tex = to_latex_combined(df, {c: "min" for c in df.columns}, "acquisition",
                                     caption=cap, label="tab:%s_nrep%02d" % (metric, nr))
-            f = os.path.join(out_dir, "%s_nrep%02d.tex" % (metric, nr))
+            f = os.path.join(out_dir, "%s_nrep%02d%s.tex" % (metric, nr, suffix))
             with open(f, "w") as fh:
                 fh.write(tex + "\n")
             written.append(f); inputs.append(os.path.basename(f))
-    main = os.path.join(out_dir, "main.tex")
+    # tables-only wrapper. Written to tables_main.tex, NOT main.tex: main.tex is the hand-written
+    # progress report (which \input's these same table files) and must never be clobbered by a
+    # table re-export.
+    main = os.path.join(out_dir, "tables_main.tex")
     with open(main, "w") as fh:
         fh.write(_LATEX_PREAMBLE + "\n".join("\\input{%s}\n\\clearpage" % i for i in inputs)
                  + "\n\\end{document}\n")
     written.append(main)
     if compile_pdf:
-        subprocess.run(["pdflatex", "-interaction=nonstopmode", "main.tex"], cwd=out_dir,
+        subprocess.run(["pdflatex", "-interaction=nonstopmode", "tables_main.tex"], cwd=out_dir,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run(["pdflatex", "-interaction=nonstopmode", "main.tex"], cwd=out_dir,
+        subprocess.run(["pdflatex", "-interaction=nonstopmode", "tables_main.tex"], cwd=out_dir,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        pdf = os.path.join(out_dir, "main.pdf")
+        pdf = os.path.join(out_dir, "tables_main.pdf")
         if os.path.exists(pdf):
             written.append(pdf)
     return written

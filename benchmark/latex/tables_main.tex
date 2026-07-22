@@ -1,0 +1,27 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.8in,landscape]{geometry}
+\usepackage{booktabs}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{amsmath}
+\title{Benchmark comparison tables --- acquisition $\times$ surrogate model}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\noindent\textbf{Legend.} Each cell is the final metric (mean $\pm$ sd over seeds). \textbf{Bold} marks
+the best model for that acquisition; \colorbox{green!20}{green} marks the single best (acquisition,
+model) combination for that problem. Lower is better for both metrics.
+\vspace{1em}
+\input{regret_nrep03_md.tex}
+\clearpage
+\input{regret_nrep10_md.tex}
+\clearpage
+\input{noise_nrep03_md.tex}
+\clearpage
+\input{noise_nrep10_md.tex}
+\clearpage
+\input{mv_nrep03_md.tex}
+\clearpage
+\input{mv_nrep10_md.tex}
+\clearpage
+\end{document}

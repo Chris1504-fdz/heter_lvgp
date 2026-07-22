@@ -1,0 +1,88 @@
+% ======================================================================
+% Discussion: risk measures for robustness — MV vs quantile (VaR) / CVaR
+% Four take-aways from Cakmak, Astudillo, Frazier & Zhou,
+% "Bayesian Optimization of Risk Measures", NeurIPS 2020.
+% ======================================================================
+\section*{Risk measures for robust design: positioning MV against VaR/CVaR}
+
+Our robustness evaluation uses the mean--variance (MV) objective of RAHBO
+(Makarova et al., 2021),
+\begin{equation}
+  \mathrm{MV}_{\alpha}(x,\ell) \;=\; f(x,\ell) \;+\; \alpha\,\sigma^{2}(x,\ell),
+  \label{eq:mv}
+\end{equation}
+whose risk weight $\alpha$ is an \emph{exchange rate} (units of $1/f$): its numerical value is
+scale-dependent and carries no probabilistic meaning. The risk-measure literature offers a
+complementary, probability-calibrated family, and connecting the two strengthens the analysis.
+The following four points draw on Cakmak et al.\ (NeurIPS 2020), who established Bayesian
+optimization of Value-at-Risk (VaR) and Conditional Value-at-Risk (CVaR) objectives.
+
+\paragraph{1. Quantile objectives are mainstream: the two schools of risk-averse BO.}
+The $\tau$-quantile of a design's outcome distribution \emph{is} its Value-at-Risk,
+$\mathrm{VaR}_{\tau}[Z] = \inf\{t : P(Z \le t) \ge \tau\}$ — a risk measure with regulatory
+pedigree (Basel II) whose direct optimization was brought into BO by Cakmak et al.
+Risk-averse BO thus splits into two schools: the \emph{mean--variance} school
+(Markowitz lineage; RAHBO, Eq.~\ref{eq:mv}), analytically linear in $(f,\sigma^{2})$ and hence
+theory-friendly, and the \emph{VaR/CVaR} school (Cakmak et al.), whose knob is an interpretable
+probability. In our heteroscedastic Gaussian setting the quantile objective is available in
+closed form,
+\begin{equation}
+  q_{\tau}(x,\ell) \;=\; f(x,\ell) \;+\; z_{\tau}\,\sigma(x,\ell),
+  \qquad z_{\tau} = \Phi^{-1}(\tau),
+  \label{eq:qtau}
+\end{equation}
+``the value a single evaluation beats with probability $\tau$.'' Because the penalty in
+Eq.~\eqref{eq:qtau} is \emph{linear} in $\sigma$ while Eq.~\eqref{eq:mv} is \emph{quadratic},
+the two measures can genuinely disagree: on our Branin problem the MV optimum relocates from
+level~2 to level~4 at $\alpha \approx 7.2$, whereas no practical quantile level ever relocates it
+(the break-even is $z = \Delta f / \Delta\sigma \approx 14.7$, i.e.\ $\tau \approx 1-10^{-49}$).
+``The robust optimum'' is therefore not unique — it depends on the adopted risk measure, which is
+why we also report the risk-measure-free Pareto view.
+
+\paragraph{2. CVaR as a tail-severity-aware companion (closed form under Gaussian noise).}
+VaR is criticized for ignoring how bad outcomes are \emph{beyond} the quantile; CVaR repairs this
+by averaging the tail, $\mathrm{CVaR}_{\tau}[Z] = \mathbb{E}\!\left[Z \mid Z \ge
+\mathrm{VaR}_{\tau}[Z]\right]$, and is coherent (Rockafellar \& Uryasev, 2000). Under our
+Gaussian noise model it, too, is closed-form:
+\begin{equation}
+  \mathrm{CVaR}_{\tau}(x,\ell) \;=\; f(x,\ell) \;+\;
+  \sigma(x,\ell)\,\frac{\varphi(z_{\tau})}{1-\tau},
+  \label{eq:cvar}
+\end{equation}
+with $\varphi$ the standard normal density. Both Eq.~\eqref{eq:qtau} and Eq.~\eqref{eq:cvar} are
+evaluated on the true $(f,\sigma)$ of the test problems at no extra cost — where Cakmak et al.\
+require Monte-Carlo posteriors over an environmental variable, replication-based heteroscedastic
+modeling collapses the same objectives to one line.
+
+\paragraph{3. Evaluation protocol: optimality gap \emph{in the risk measure}.}
+Cakmak et al.\ report the log optimality gap of the risk objective itself, not of $f$. We adopt
+the analogous protocol: noise-aware methods are scored by MV-regret,
+$\min_{i\le t}\mathrm{MV}_{\alpha}(x_i) - \mathrm{MV}_{\alpha}^{*}$, alongside the classical
+$f$-regret — judging a risk-averse acquisition by $f$-regret alone structurally penalizes it for
+doing its job (declining noisy $f$-optima). A $q_{\tau}$-regret variant,
+$\min_{i\le t} q_{\tau}(x_i) - q_{\tau}^{*}$, completes the set and inherits the probability
+interpretation of its knob.
+
+\paragraph{4. A quantile acquisition with an interpretable knob (proposed).}
+The central message of Cakmak et al.\ — build the acquisition on the \emph{risk measure's}
+posterior rather than on $f$'s — suggests a drop-in variant of RAHBO's acquisition for our
+setting. Replacing the MV penalty by the quantile penalty of Eq.~\eqref{eq:qtau} gives
+\begin{equation}
+  x_{t+1} \;=\; \arg\min_{x,\ell}\;
+  \underbrace{\big(\mu_t(x,\ell) - \beta\, s_t(x,\ell)\big)}_{\text{LCB on } f
+  \text{ (epistemic exploration)}}
+  \;+\; z_{\tau}\,\sqrt{r_t(x,\ell)},
+  \label{eq:qlcb}
+\end{equation}
+where $\mu_t, s_t$ are the surrogate posterior mean and epistemic standard deviation and $r_t$
+the predicted aleatoric variance. Eq.~\eqref{eq:qlcb} has RAHBO's exact structure with one
+change: its risk knob is a \emph{probability} ($\tau$), directly answering the interpretability
+critique of $\alpha$. Because both engine implementations share closed-form acquisition
+mathematics, this is a minimal extension of the present benchmark and is left as future work.
+
+\medskip
+\noindent\emph{References.}\;
+S.~Cakmak, R.~Astudillo, P.~Frazier, E.~Zhou, ``Bayesian Optimization of Risk Measures,''
+\emph{NeurIPS}, 2020 (arXiv:2007.05554).\;
+A.~Makarova et al., ``Risk-averse Heteroscedastic Bayesian Optimization,'' \emph{NeurIPS}, 2021.\;
+R.T.~Rockafellar, S.~Uryasev, ``Optimization of Conditional Value-at-Risk,'' \emph{J.\ Risk}, 2000.

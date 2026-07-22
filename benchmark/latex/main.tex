@@ -3,25 +3,241 @@
 \usepackage{booktabs}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{amsmath}
-\title{Benchmark comparison tables --- acquisition $\times$ surrogate model}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\newcommand{\finding}[1]{\par\medskip\noindent\fcolorbox{black!30}{yellow!10}{\parbox{0.97\textwidth}{\textbf{Findings.} #1}}\medskip}
+
+\title{Heteroscedastic mixed-variable BO benchmark --- progress report}
 \author{}
-\date{}
+\date{July 22, 2026}
+
 \begin{document}
 \maketitle
-\noindent\textbf{Legend.} Each cell is the final metric (mean $\pm$ sd over seeds). \textbf{Bold} marks
-the best model for that acquisition; \colorbox{green!20}{green} marks the single best (acquisition,
-model) combination for that problem. Lower is better for both metrics.
-\vspace{1em}
-\input{regret_nrep03.tex}
+
+\section{Scope and status of the runs}
+
+The benchmark compares \textbf{4 surrogate models} (Separate GP, Categorical-kernel GP,
+Standard LVGP, Heteroscedastic LVGP) $\times$ \textbf{6 acquisitions} (EI/LCB/PI +
+noise-aware HAEI/ANPEI/RAHBO) $\times$ $n_{\mathrm{rep}}\in\{3,10\}$ replicates $\times$
+5 seeds on 9 mixed-variable heteroscedastic test problems (200 BO iterations for the
+multi-dimensional problems, 50 for the 1-D ones; shared SLHD initial designs per seed ---
+common random numbers across all models). The sweep runs python models first, all
+$n_{\mathrm{rep}}{=}10$ blocks before $n_{\mathrm{rep}}{=}3$, and the 10-D problem last.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lrl}
+\toprule
+Problem & Complete & Note \\
+\midrule
+ackley\_2d, branin\_hetero, griewank\_2d, sixhump\_camel & 100\% & 1-D; also carry the full 30-seed evidence from the earlier sweep \\
+otl\_circuit, piston, rastrigin\_6d & 100\% & multi-dimensional (d = 5--6) \\
+golinski & 97\% & 6 cells lost to an early 8\,h timeout (since raised to 16\,h); refill pass pending \\
+ackley\_10d & 32\% & \emph{in progress} --- heter-LVGP cells still pending \\
+\bottomrule
+\end{tabular}
+\caption{Run status as of July 22, 2026 (sweep position 1748/2100 grid cells).}
+\end{table}
+
+\section{Computational cost and the 5-seed decision}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lrrrr}
+\toprule
+ & Separate GP & Categorical kernel & Standard LVGP & Heteroscedastic LVGP \\
+\midrule
+1-D problems (50 iter)        & 18--44\,s   & 54--114\,s  & 5--11\,min      & 5--13\,min \\
+d = 5--6 problems (200 iter)  & 20--40\,min & 43--110\,min & 4.3--7.3\,h    & 4.6--6.9\,h \\
+ackley\_10d (200 iter)        & 1.1\,h      & 3.2\,h      & \textbf{20.1\,h} & pending (projected $\sim$1--1.5\,d) \\
+\bottomrule
+\end{tabular}
+\caption{Measured mean wall-clock per cell (one full BO run). The MATLAB LVGP engines cost
+$\sim$10--25$\times$ the python GP models; the validated native python LVGP port
+(\texttt{compare\_matlab\_python.ipynb}) is the mitigation path for the 10-D block.}
+\end{table}
+
+\paragraph{Why 5 seeds.}
+The sweep runs 24 parallel workers on the shared node, so the constraint is total compute, not
+sequential time: at the measured per-cell costs the full 30-seed grid amounts to roughly
+$3\times10^4$ core-hours (dominated by the MATLAB LVGPs on the $d\ge5$ problems and the 10-D
+block), i.e.\ $\approx$7--8 \emph{weeks} of wall-clock even at full 24-way parallelism ---
+monopolizing a node shared with other users. Five seeds with both $n_{\mathrm{rep}}$ cut this
+to $\approx$9 days of wall-clock (consistent with the observed pace: $\sim$85\% of the grid
+in 6 days) while still populating \emph{every} (model, acquisition, problem) cell,
+seed-paired across models via the shared initial designs. The
+analysis compensates statistically (medians/IQR, cross-problem rank consistency rather than
+per-problem significance), the four 1-D problems retain their 30-seed evidence, and the
+harness is resumable so seeds can be extended selectively later.
+
 \clearpage
-\input{regret_nrep10.tex}
+\section{Regret convergence}
+
+\begin{figure}[h]
+\centering
+\includegraphics[height=0.80\textheight]{figs/regret_conv_1d.pdf}
+\caption{Regret convergence (EI, $n_{\mathrm{rep}}=10$, median $\pm$ IQR over seeds) --- 1-D
+problems. Other acquisitions: \texttt{compare.ipynb} Part~3/6.}
+\end{figure}
+
 \clearpage
-\input{noise_nrep03.tex}
+\begin{figure}[h]
+\centering
+\includegraphics[height=0.66\textheight]{figs/regret_conv_md.pdf}
+\caption{Regret convergence (EI, $n_{\mathrm{rep}}=10$) --- multi-dimensional problems.}
+\end{figure}
+
+\finding{
+(1) On the 1-D problems every model converges to the optimum region; the MATLAB LVGPs
+exploit it tightest --- note this partly reflects their BO loop, not only the model (verified:
+the loop effect appears for non-LVGP models too), so cross-engine regret gaps should be read
+with care.
+(2) \textbf{golinski exposes noise-blindness}: the Standard LVGP's median final regret under
+EI is $\approx 44$ (PI: $\approx 49$) while the heteroscedastic LVGP and both python GPs
+solve the problem to $\approx 0$ --- the optimum sits in a region with replicate variance
+$\sigma^2 = 576$, and fitting replicate means as if noiseless breaks the model there.
+(3) \textbf{rastrigin\_6d is the hardest problem so far} and is led by the python GPs
+(median EI regret: categorical $3.3$, separate $9.3$) with both LVGPs trailing (standard
+$25.6$, heter $32.3$) --- surface accuracy dominates on this rugged landscape.
+(4) otl\_circuit and piston are near-solved by all models (regret $\le 0.08$); differences
+there are in \emph{design noise}, not in $f$ (see \S5--6).}
+
 \clearpage
-\input{noise_nrep10.tex}
+\section{Final regret tables}
+\noindent\textbf{Legend (all tables).} Cell = final metric (mean $\pm$ sd over seeds).
+\textbf{Bold} = best model for that acquisition; \colorbox{green!20}{green} = best
+(acquisition, model) combination for that problem. Lower is better.
+
+\input{regret_nrep10_1d.tex}
 \clearpage
-\input{mv_nrep03.tex}
+\input{regret_nrep10_md.tex}
 \clearpage
-\input{mv_nrep10.tex}
+\input{regret_nrep03_1d.tex}
 \clearpage
+\input{regret_nrep03_md.tex}
+
+\finding{
+(1) $n_{\mathrm{rep}}=10$ vs $3$: more replicates help the noise-aware configurations most
+(their noise estimates stabilize); the ranking of models is broadly stable across both.
+(2) The best single configurations per problem (green cells) are spread across models ---
+no single (model, acquisition) wins everywhere; the heteroscedastic LVGP collects its wins
+on the problems where noise matters (golinski, otl, piston), the categorical GP on the
+rugged rastrigin.}
+
+\clearpage
+\section{Noise at the incumbent (lower = quieter design)}
+\input{noise_nrep10_1d.tex}
+\clearpage
+\input{noise_nrep10_md.tex}
+\clearpage
+\input{noise_nrep03_1d.tex}
+\clearpage
+\input{noise_nrep03_md.tex}
+
+\finding{
+(1) On otl\_circuit all models reach top-tier $f$, but ranked against the whole design
+space the heteroscedastic LVGP's noise-aware recommendations come from the \textbf{quietest
+11\%} of designs vs.\ 34\% for both python GPs (percentile framing, \texttt{compare.ipynb}
+Part~6) --- equal performance, $\sim$3$\times$ quieter design.
+(2) On rastrigin the incumbent noise ordering is categorical $1.11$ $<$ separate $1.15$ $<$
+heter $1.28$ --- where the heter LVGP's $f$-surface is weak, its noise advantage does not
+compensate.
+(3) On the 1-D problems the noise columns mostly mirror which minimum was found (quiet vs
+noisy twin) --- the discriminating robustness view is \S6.}
+
+\clearpage
+\section{Heatmaps --- acquisition $\times$ model (multi-dimensional problems)}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{figs/heatmaps_multidim_nrep10.pdf}
+\caption{Final regret per acquisition $\times$ model for the multi-dimensional problems
+($n_{\mathrm{rep}}=10$) --- the regime where regret is informative. Per-problem versions for
+the 1-D problems: \texttt{compare.ipynb} Part~4.}
+\end{figure}
+
+\finding{
+Reading the four panels column-wise: the Standard LVGP column is the weakest on golinski
+(noise-blindness, cf.\ \S3) and rastrigin; the heteroscedastic LVGP column is strong on
+golinski/otl/piston across acquisitions; the categorical GP dominates rastrigin under every
+acquisition. Acquisition-wise, EI/LCB are the most reliable columns overall; PI is the most
+erratic.}
+
+\clearpage
+\section{Work in progress --- mean--variance (MV) robustness}
+
+Robustness is scored on the true $\mathrm{MV}_\alpha = f + \alpha\sigma^2$ of the recommended
+design. Ground truth first: the MV optimum \emph{relocates to a different categorical level}
+on branin ($\alpha\gtrsim7$), griewank\_2d ($\alpha\gtrsim13$) and golinski
+($\alpha\gtrsim5$) --- the ``trap'' problems; camel and ackley are controls whose nominal
+optima are already quiet. The current sweep runs RAHBO at $\alpha=0.5$ (below every
+threshold), so the $\alpha\in\{1,5,15\}$ sensitivity sweep and a reporting-rule refinement
+(\texttt{notes/README.md}) are pending before conclusions; tables below use $\alpha=1$.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.72\textwidth]{figs/mv_landscape_branin_hetero.pdf}
+\caption{Ground-truth MV landscape, \textbf{branin} (trap): the global optimum (star) moves
+from level 2 to level 4 as $\alpha$ grows.}
+\end{figure}
+
+\clearpage
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.72\textwidth]{figs/mv_landscape_griewank_2d.pdf}
+\caption{Ground-truth MV landscape, \textbf{griewank\_2d} (trap at $\alpha\gtrsim13$:
+level 1 $\to$ 2).}
+\end{figure}
+
+\clearpage
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.72\textwidth]{figs/mv_landscape_sixhump_camel.pdf}
+\caption{Ground-truth MV landscape, \textbf{sixhump\_camel} (control: the optimum never
+moves --- already quiet).}
+\end{figure}
+
+\clearpage
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.72\textwidth]{figs/mv_landscape_ackley_2d.pdf}
+\caption{Ground-truth MV landscape, \textbf{ackley\_2d} (control).}
+\end{figure}
+
+\clearpage
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.78\textwidth]{figs/pareto_1d.pdf}
+\caption{Hyperparameter-free view: ground-truth $(f,\sigma^2)$ Pareto front per 1-D problem,
+with each model's final noise-aware recommendations overlaid. On-front = optimal for some
+risk weight; up-right = dominated.}
+\end{figure}
+
+\finding{
+(1) \textbf{The branin trap catches the categorical-kernel GP}: a cluster of its noise-aware
+recommendations sits on the noisy twin ($\sigma^2 \approx 40$--$80$, dominated), while the
+heteroscedastic LVGP's recommendations sit on the Pareto front near the quiet optimum.
+(2) Only 3 of the 8 completed problems (branin, griewank\_2d, golinski) can discriminate
+robust from non-robust methods; camel/ackley confirm no method is penalized when robustness
+is free.
+(3) At the sweep's $\alpha=0.5$ the robust and nominal optima coincide everywhere, so the MV
+tables below ($\alpha=1$) largely mirror the regret tables; the discriminating comparison is
+the pending $\alpha\in\{5,15\}$ sweep.}
+
+\clearpage
+\input{mv_nrep10_1d.tex}
+\clearpage
+\input{mv_nrep10_md.tex}
+
+\section*{Pointers}
+\begin{itemize}
+\item \texttt{notebooks/compare.ipynb} --- full analysis (9 parts): convergence facets,
+      per-problem reports, latent spaces, acquisition tables, robustness visuals
+      (MV/quantile landscapes, Pareto, percentiles), model-quality metrics, exports.
+\item \texttt{notebooks/compare\_v2.ipynb} --- curated narrative with equations and dated
+      observation notes.
+\item \texttt{notebooks/compare\_matlab\_python.ipynb} --- MATLAB vs native-python LVGP
+      validation (equivalence, computing time, latent match).
+\end{itemize}
+
 \end{document}

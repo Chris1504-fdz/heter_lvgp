@@ -1,0 +1,40 @@
+\begin{table}[htbp]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\setlength{\fboxsep}{2pt}
+\caption{Final mean-variance regret (RAHBO robustness, $\mathrm{MV}=f+\alpha\sigma^2$, $\alpha=1$) for every acquisition $\times$ surrogate model ($n_{\mathrm{rep}}=10$, mean $\pm$ sd over seeds).}
+\label{tab:mv_nrep10}
+\begin{tabular}{llrrrr}
+\toprule
+Acquisition & Model & Ackley 2-D & Branin & Griewank 2-D & Six-hump Camel \\
+\midrule
+LCB & Standard LVGP & \colorbox{green!20}{{\boldmath$0.00408 \pm 0.0047$}} & {\boldmath$0.00407 \pm 0.0032$} & {\boldmath$0.00381 \pm 0.014$} & $0.0339 \pm 0.13$ \\
+ & Heteroscedastic LVGP & $0.0188 \pm 0.021$ & $1 \pm 1.6$ & $0.0097 \pm 0.021$ & $0.034 \pm 0.13$ \\
+ & Separate GP & $0.733 \pm 1.3$ & $2.34 \pm 3.4$ & $0.0784 \pm 0.1$ & $0.207 \pm 0.34$ \\
+ & Categorical kernel & $0.297 \pm 0.88$ & $1.77 \pm 4.3$ & $0.019 \pm 0.064$ & {\boldmath$0.0193 \pm 0.1$} \\
+\midrule
+PI & Standard LVGP & $0.0131 \pm 0.014$ & {\boldmath$0.139 \pm 0.74$} & {\boldmath$0.000902 \pm 0.0012$} & {\boldmath$0.000115 \pm 0.00017$} \\
+ & Heteroscedastic LVGP & $0.281 \pm 1$ & $2.41 \pm 4.5$ & $0.0436 \pm 0.085$ & $0.0513 \pm 0.15$ \\
+ & Separate GP & $0.715 \pm 1.3$ & $1.72 \pm 2.2$ & $0.0343 \pm 0.064$ & $0.0702 \pm 0.2$ \\
+ & Categorical kernel & {\boldmath$0.00491 \pm 0.006$} & $0.854 \pm 3.3$ & $0.00234 \pm 0.01$ & $0.000646 \pm 0.0023$ \\
+\midrule
+EI & Standard LVGP & $0.0102 \pm 0.0098$ & {\boldmath$0.00449 \pm 0.0035$} & \colorbox{green!20}{{\boldmath$-6.55{\times}10^{-7} \pm 4.2{\times}10^{-7}$}} & \colorbox{green!20}{{\boldmath$1.67{\times}10^{-6} \pm 5.6{\times}10^{-6}$}} \\
+ & Heteroscedastic LVGP & $0.022 \pm 0.031$ & $0.868 \pm 1.7$ & $0.0218 \pm 0.049$ & $0.0341 \pm 0.13$ \\
+ & Separate GP & $0.426 \pm 1.1$ & $1.81 \pm 2$ & $0.0278 \pm 0.05$ & $0.0467 \pm 0.18$ \\
+ & Categorical kernel & {\boldmath$0.01 \pm 0.0092$} & $0.765 \pm 1.3$ & $0.000174 \pm 0.00025$ & $0.000521 \pm 0.00094$ \\
+\midrule
+HAEI ($\gamma=0.5$) & Heteroscedastic LVGP & $0.0259 \pm 0.023$ & $0.17 \pm 0.79$ & {\boldmath$0.00804 \pm 0.019$} & $0.0171 \pm 0.091$ \\
+ & Separate GP & $0.429 \pm 1.1$ & $1.29 \pm 1.8$ & $0.0277 \pm 0.05$ & $0.0511 \pm 0.15$ \\
+ & Categorical kernel & {\boldmath$0.00801 \pm 0.0085$} & {\boldmath$0.0895 \pm 0.19$} & $0.00886 \pm 0.02$ & {\boldmath$0.000347 \pm 0.00085$} \\
+\midrule
+ANPEI ($\beta=0.8$) & Heteroscedastic LVGP & $0.0208 \pm 0.019$ & {\boldmath$0.00777 \pm 0.022$} & {\boldmath$0.018 \pm 0.026$} & {\boldmath$6.35{\times}10^{-5} \pm 0.00015$} \\
+ & Separate GP & $0.117 \pm 0.56$ & $1.42 \pm 2.1$ & $0.0392 \pm 0.049$ & $0.000237 \pm 0.00042$ \\
+ & Categorical kernel & {\boldmath$0.00552 \pm 0.0094$} & $0.159 \pm 0.47$ & $0.0387 \pm 0.05$ & $0.000346 \pm 0.00088$ \\
+\midrule
+RAHBO ($\alpha=0.5$) & Heteroscedastic LVGP & {\boldmath$0.0203 \pm 0.025$} & \colorbox{green!20}{{\boldmath$0.00399 \pm 0.012$}} & {\boldmath$0.00786 \pm 0.019$} & $0.017 \pm 0.091$ \\
+ & Separate GP & $0.73 \pm 1.3$ & $0.581 \pm 1.5$ & $0.0783 \pm 0.1$ & $0.173 \pm 0.3$ \\
+ & Categorical kernel & $0.4 \pm 1$ & $0.717 \pm 3.1$ & $0.0403 \pm 0.1$ & {\boldmath$0.00022 \pm 0.00055$} \\
+\bottomrule
+\end{tabular}
+\end{table}

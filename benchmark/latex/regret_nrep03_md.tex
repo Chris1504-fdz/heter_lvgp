@@ -1,0 +1,40 @@
+\begin{table}[htbp]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\setlength{\fboxsep}{2pt}
+\caption{Final regret (value $-$ $f^*$) for every acquisition $\times$ surrogate model ($n_{\mathrm{rep}}=3$, mean $\pm$ sd over seeds).}
+\label{tab:regret_nrep03}
+\begin{tabular}{llrrrr}
+\toprule
+Acquisition & Model & Golinski & OTL Circuit & Piston & Rastrigin 6-D \\
+\midrule
+LCB & Standard LVGP & $2.56{\times}10^{-6} \pm 8.5{\times}10^{-8}$ & $1.53{\times}10^{-6} \pm 9.7{\times}10^{-7}$ & $0.000307 \pm 0.00029$ & $23.5 \pm 8.7$ \\
+ & Heteroscedastic LVGP & $1.24{\times}10^{-7} \pm 1{\times}10^{-8}$ & \colorbox{green!20}{{\boldmath$4.33{\times}10^{-7} \pm 5.5{\times}10^{-7}$}} & \colorbox{green!20}{{\boldmath$1.49{\times}10^{-6} \pm 1.5{\times}10^{-6}$}} & $22.7 \pm 6.9$ \\
+ & Separate GP & \colorbox{green!20}{{\boldmath$0 \pm 0$}} & $0.00142 \pm 0.0028$ & $0.0011 \pm 0.0007$ & $18.9 \pm 8.3$ \\
+ & Categorical kernel & \colorbox{green!20}{{\boldmath$0 \pm 0$}} & $3.07{\times}10^{-5} \pm 6.1{\times}10^{-5}$ & $0.000715 \pm 0.00033$ & {\boldmath$7.57 \pm 4.4$} \\
+\midrule
+PI & Standard LVGP & $31.6 \pm 17$ & $0.0242 \pm 0.022$ & $0.00168 \pm 0.001$ & $11.6 \pm 3.7$ \\
+ & Heteroscedastic LVGP & $0.941 \pm 1.9$ & $0.00164 \pm 0.0012$ & {\boldmath$0.000361 \pm 0.0004$} & $19.1 \pm 2.4$ \\
+ & Separate GP & \colorbox{green!20}{{\boldmath$0 \pm 0$}} & {\boldmath$1.74{\times}10^{-5} \pm 2.3{\times}10^{-5}$} & $0.000718 \pm 0.00046$ & $17.2 \pm 6.5$ \\
+ & Categorical kernel & \colorbox{green!20}{{\boldmath$0 \pm 0$}} & $0.0155 \pm 0.011$ & $0.00177 \pm 0.00093$ & \colorbox{green!20}{{\boldmath$4.18 \pm 3.2$}} \\
+\midrule
+EI & Standard LVGP & $16.3 \pm 17$ & $0.0565 \pm 0.02$ & $0.00339 \pm 0.0033$ & $19.5 \pm 12$ \\
+ & Heteroscedastic LVGP & $0.000119 \pm 0.00015$ & $0.0119 \pm 0.013$ & $0.00182 \pm 0.0015$ & $24.4 \pm 8.1$ \\
+ & Separate GP & \colorbox{green!20}{{\boldmath$0 \pm 0$}} & {\boldmath$0.00033 \pm 0.00041$} & {\boldmath$0.00131 \pm 0.00074$} & $15.1 \pm 8.4$ \\
+ & Categorical kernel & \colorbox{green!20}{{\boldmath$0 \pm 0$}} & $0.0218 \pm 0.018$ & $0.00267 \pm 0.00088$ & {\boldmath$5.61 \pm 3.9$} \\
+\midrule
+HAEI ($\gamma=0.5$) & Heteroscedastic LVGP & $3.75 \pm 2.1$ & $0.0268 \pm 0.029$ & $0.00197 \pm 0.0013$ & $28.1 \pm 8.4$ \\
+ & Separate GP & \colorbox{green!20}{{\boldmath$0 \pm 0$}} & {\boldmath$0.000173 \pm 0.00028$} & {\boldmath$0.00163 \pm 0.00073$} & $9.95 \pm 3.9$ \\
+ & Categorical kernel & \colorbox{green!20}{{\boldmath$0 \pm 0$}} & $0.0203 \pm 0.017$ & $0.00189 \pm 0.00073$ & {\boldmath$4.92 \pm 1.7$} \\
+\midrule
+ANPEI ($\beta=0.8$) & Heteroscedastic LVGP & $0.307 \pm 0.61$ & $0.0147 \pm 0.012$ & {\boldmath$0.00246 \pm 0.0012$} & $26.3 \pm 5.6$ \\
+ & Separate GP & \colorbox{green!20}{{\boldmath$0 \pm 0$}} & {\boldmath$0.000322 \pm 0.0004$} & $0.00254 \pm 0.00099$ & $11.2 \pm 4.1$ \\
+ & Categorical kernel & $1.49 \pm 3$ & $0.0146 \pm 0.013$ & $0.00295 \pm 0.0018$ & {\boldmath$7.34 \pm 5.3$} \\
+\midrule
+RAHBO ($\alpha=0.5$) & Heteroscedastic LVGP & {\boldmath$9.65 \pm 6.6$} & {\boldmath$6.33{\times}10^{-7} \pm 4.8{\times}10^{-7}$} & {\boldmath$1.71{\times}10^{-6} \pm 3{\times}10^{-6}$} & $22.4 \pm 8.3$ \\
+ & Separate GP & $56.7 \pm 47$ & $0.00142 \pm 0.0028$ & $0.00112 \pm 0.00073$ & $20.1 \pm 10$ \\
+ & Categorical kernel & $20 \pm 29$ & $1.23{\times}10^{-5} \pm 2.5{\times}10^{-5}$ & $0.000713 \pm 0.00054$ & {\boldmath$8.7 \pm 4.2$} \\
+\bottomrule
+\end{tabular}
+\end{table}
