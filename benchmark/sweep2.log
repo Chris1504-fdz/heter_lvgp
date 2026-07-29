@@ -11522,3 +11522,376 @@ shared Xvfb on :97 (pid 2880110)
 [1749/2100] ackley_10d/standard_LVGP/pi/nrep10/seed02: ok
 [1750/2100] ackley_10d/standard_LVGP/pi/nrep10/seed03: ok
 [1751/2100] ackley_10d/heter_LVGP/lcb/nrep10/seed01: ok
+[1752/2100] ackley_10d/standard_LVGP/pi/nrep10/seed01: ok
+[1753/2100] ackley_10d/heter_LVGP/lcb/nrep10/seed02: ok
+[1754/2100] ackley_10d/standard_LVGP/pi/nrep10/seed04: ok
+[1755/2100] ackley_10d/standard_LVGP/ei/nrep10/seed05: ok
+[1756/2100] ackley_10d/standard_LVGP/ei/nrep10/seed01: ok
+[1757/2100] ackley_10d/heter_LVGP/rahbo_a0.5/nrep10/seed01: ok
+[1758/2100] ackley_10d/standard_LVGP/pi/nrep10/seed05: ok
+[1759/2100] ackley_10d/heter_LVGP/pi/nrep10/seed01: ok
+[1760/2100] ackley_10d/heter_LVGP/anpei_b0.8/nrep10/seed01: ok
+[1761/2100] ackley_10d/heter_LVGP/ei/nrep10/seed01: ok
+[1762/2100] ackley_10d/heter_LVGP/haei_g0.5/nrep10/seed01: ok
+[1763/2100] griewank_10d/separate_gp/lcb/nrep10/seed01: ok
+[1764/2100] griewank_10d/separate_gp/pi/nrep10/seed01: ok
+[1765/2100] ackley_10d/heter_LVGP/pi/nrep10/seed02: ok
+[1766/2100] griewank_10d/separate_gp/ei/nrep10/seed01: ok
+[1767/2100] griewank_10d/separate_gp/haei_g0.5/nrep10/seed01: ok
+[1768/2100] griewank_10d/separate_gp/anpei_b0.8/nrep10/seed01: ok
+[1769/2100] griewank_10d/separate_gp/rahbo_a0.5/nrep10/seed01: ok
+[1770/2100] griewank_10d/separate_gp/lcb/nrep10/seed02: ok
+[1771/2100] griewank_10d/separate_gp/pi/nrep10/seed02: ok
+[1772/2100] griewank_10d/separate_gp/ei/nrep10/seed02: ok
+[1773/2100] griewank_10d/separate_gp/haei_g0.5/nrep10/seed02: ok
+[1774/2100] ackley_10d/heter_LVGP/ei/nrep10/seed02: ok
+[1775/2100] griewank_10d/separate_gp/rahbo_a0.5/nrep10/seed02: ok
+[1776/2100] griewank_10d/separate_gp/anpei_b0.8/nrep10/seed02: ok
+[1777/2100] griewank_10d/separate_gp/lcb/nrep10/seed03: ok
+[1778/2100] griewank_10d/separate_gp/ei/nrep10/seed03: ok
+[1779/2100] griewank_10d/separate_gp/haei_g0.5/nrep10/seed03: ok
+[1780/2100] griewank_10d/separate_gp/pi/nrep10/seed03: ok
+[1781/2100] griewank_10d/separate_gp/anpei_b0.8/nrep10/seed03: ok
+[1782/2100] griewank_10d/separate_gp/lcb/nrep10/seed04: ok
+[1783/2100] griewank_10d/separate_gp/rahbo_a0.5/nrep10/seed03: ok
+[1784/2100] griewank_10d/separate_gp/ei/nrep10/seed04: ok
+[1785/2100] griewank_10d/separate_gp/pi/nrep10/seed04: ok
+[1786/2100] griewank_10d/separate_gp/haei_g0.5/nrep10/seed04: ok
+[1787/2100] griewank_10d/separate_gp/anpei_b0.8/nrep10/seed04: ok
+[1788/2100] griewank_10d/separate_gp/rahbo_a0.5/nrep10/seed04: ok
+[1789/2100] griewank_10d/separate_gp/lcb/nrep10/seed05: ok
+[1790/2100] griewank_10d/separate_gp/pi/nrep10/seed05: ok
+[1791/2100] griewank_10d/separate_gp/ei/nrep10/seed05: ok
+[1792/2100] griewank_10d/separate_gp/haei_g0.5/nrep10/seed05: ok
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+[1793/2100] griewank_10d/categorical_kernel/lcb/nrep10/seed01: ok
+[1794/2100] griewank_10d/separate_gp/anpei_b0.8/nrep10/seed05: ok
+[1795/2100] griewank_10d/separate_gp/rahbo_a0.5/nrep10/seed05: ok
+[1796/2100] griewank_10d/categorical_kernel/pi/nrep10/seed01: ok
+[1797/2100] griewank_10d/categorical_kernel/haei_g0.5/nrep10/seed01: ok
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+[1798/2100] griewank_10d/categorical_kernel/ei/nrep10/seed01: ok
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+[1799/2100] griewank_10d/categorical_kernel/anpei_b0.8/nrep10/seed01: ok
+[1800/2100] griewank_10d/categorical_kernel/rahbo_a0.5/nrep10/seed01: ok
+[1801/2100] griewank_10d/categorical_kernel/pi/nrep10/seed02: ok
+[1802/2100] griewank_10d/categorical_kernel/ei/nrep10/seed02: ok
+[1803/2100] ackley_10d/heter_LVGP/rahbo_a0.5/nrep10/seed02: ok
+[1804/2100] griewank_10d/categorical_kernel/haei_g0.5/nrep10/seed02: ok
+[1805/2100] ackley_10d/heter_LVGP/haei_g0.5/nrep10/seed02: ok
+[1806/2100] ackley_10d/heter_LVGP/anpei_b0.8/nrep10/seed02: ok
+[1807/2100] griewank_10d/categorical_kernel/lcb/nrep10/seed02: ok
+[1808/2100] ackley_10d/heter_LVGP/haei_g0.5/nrep10/seed04: ok
+[1809/2100] griewank_10d/categorical_kernel/anpei_b0.8/nrep10/seed02: ok
+[1810/2100] ackley_10d/heter_LVGP/lcb/nrep10/seed03: ok
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+[1811/2100] griewank_10d/categorical_kernel/haei_g0.5/nrep10/seed03: ok
+[1812/2100] griewank_10d/categorical_kernel/pi/nrep10/seed03: ok
+[1813/2100] ackley_10d/heter_LVGP/rahbo_a0.5/nrep10/seed03: ok
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+[1814/2100] griewank_10d/categorical_kernel/lcb/nrep10/seed04: ok
+[1815/2100] griewank_10d/categorical_kernel/ei/nrep10/seed03: ok
+[1816/2100] griewank_10d/categorical_kernel/anpei_b0.8/nrep10/seed03: ok
+[1817/2100] ackley_10d/heter_LVGP/haei_g0.5/nrep10/seed03: ok
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+/data/zhq7531/envs/ml_gp_env/lib/python3.13/site-packages/gpytorch/distributions/multivariate_normal.py:376: NumericalWarning: Negative variance values detected. This is likely due to numerical instabilities. Rounding negative variances up to 1e-10.
+  warnings.warn(
+[1818/2100] griewank_10d/categorical_kernel/pi/nrep10/seed04: ok
+[1819/2100] griewank_10d/categorical_kernel/rahbo_a0.5/nrep10/seed04: ok
+[1820/2100] ackley_10d/heter_LVGP/lcb/nrep10/seed04: ok
+[1821/2100] griewank_10d/categorical_kernel/haei_g0.5/nrep10/seed04: ok
+[1822/2100] ackley_10d/heter_LVGP/rahbo_a0.5/nrep10/seed04: ok
+[1823/2100] ackley_10d/heter_LVGP/pi/nrep10/seed03: ok
+[1824/2100] griewank_10d/categorical_kernel/ei/nrep10/seed04: ok
+[1825/2100] griewank_10d/categorical_kernel/lcb/nrep10/seed03: ok
+[1826/2100] griewank_10d/categorical_kernel/rahbo_a0.5/nrep10/seed02: ok
+[1827/2100] ackley_10d/heter_LVGP/ei/nrep10/seed03: ok
+[1828/2100] griewank_10d/categorical_kernel/anpei_b0.8/nrep10/seed04: ok
+[1829/2100] griewank_10d/categorical_kernel/pi/nrep10/seed05: ok
+[1830/2100] ackley_10d/heter_LVGP/lcb/nrep10/seed05: ok
+[1831/2100] griewank_10d/categorical_kernel/rahbo_a0.5/nrep10/seed03: ok
+[1832/2100] griewank_10d/categorical_kernel/haei_g0.5/nrep10/seed05: ok
+[1833/2100] ackley_10d/heter_LVGP/rahbo_a0.5/nrep10/seed05: ok
+[1834/2100] griewank_10d/categorical_kernel/lcb/nrep10/seed05: ok
+[1835/2100] griewank_10d/categorical_kernel/ei/nrep10/seed05: ok
+[1836/2100] ackley_10d/heter_LVGP/anpei_b0.8/nrep10/seed04: ok
+[1837/2100] ackley_10d/heter_LVGP/pi/nrep10/seed04: ok
+[1838/2100] ackley_10d/heter_LVGP/ei/nrep10/seed04: ok
+[1839/2100] griewank_10d/categorical_kernel/anpei_b0.8/nrep10/seed05: ok
+[1840/2100] griewank_10d/categorical_kernel/rahbo_a0.5/nrep10/seed05: ok
+[1841/2100] ackley_10d/heter_LVGP/anpei_b0.8/nrep10/seed05: ok
+[1842/2100] ackley_10d/heter_LVGP/haei_g0.5/nrep10/seed05: ok
+[1843/2100] ackley_10d/heter_LVGP/ei/nrep10/seed05: ok
+[1844/2100] ackley_10d/heter_LVGP/pi/nrep10/seed05: ok
+[1845/2100] ackley_10d/heter_LVGP/anpei_b0.8/nrep10/seed03: ok
+[1846/2100] griewank_10d/standard_LVGP/ei/nrep10/seed01: ok
+[1847/2100] griewank_10d/standard_LVGP/pi/nrep10/seed05: ok
+[1848/2100] griewank_10d/standard_LVGP/pi/nrep10/seed02: ok
+[1849/2100] griewank_10d/standard_LVGP/lcb/nrep10/seed01: ok
+[1850/2100] griewank_10d/standard_LVGP/ei/nrep10/seed04: ok
+[1851/2100] griewank_10d/standard_LVGP/lcb/nrep10/seed05: ok
+[1852/2100] griewank_10d/standard_LVGP/pi/nrep10/seed01: ok
+[1853/2100] griewank_10d/standard_LVGP/pi/nrep10/seed04: ok
+[1854/2100] griewank_10d/standard_LVGP/lcb/nrep10/seed03: ok
+[1855/2100] griewank_10d/standard_LVGP/ei/nrep10/seed02: ok
+[1856/2100] griewank_10d/standard_LVGP/ei/nrep10/seed03: ok
+[1857/2100] griewank_10d/heter_LVGP/haei_g0.5/nrep10/seed01: ok
+[1858/2100] griewank_10d/standard_LVGP/pi/nrep10/seed03: ok
+[1859/2100] griewank_10d/standard_LVGP/lcb/nrep10/seed02: ok
+[1860/2100] griewank_10d/heter_LVGP/pi/nrep10/seed01: ok
+[1861/2100] griewank_10d/standard_LVGP/ei/nrep10/seed05: ok
+[1862/2100] griewank_10d/standard_LVGP/lcb/nrep10/seed04: ok
+[1863/2100] griewank_10d/heter_LVGP/ei/nrep10/seed01: ok
+[1864/2100] griewank_10d/heter_LVGP/anpei_b0.8/nrep10/seed01: ok
+[1865/2100] griewank_10d/heter_LVGP/lcb/nrep10/seed01: ok
+[1866/2100] griewank_10d/heter_LVGP/pi/nrep10/seed02: ok
+[1867/2100] griewank_10d/heter_LVGP/lcb/nrep10/seed02: ok
+[1868/2100] griewank_10d/heter_LVGP/ei/nrep10/seed02: ok
+[1869/2100] griewank_10d/heter_LVGP/rahbo_a0.5/nrep10/seed01: ok
+[1870/2100] ackley_10d/separate_gp/pi/nrep03/seed01: ok
+[1871/2100] ackley_10d/separate_gp/lcb/nrep03/seed01: ok
+[1872/2100] ackley_10d/separate_gp/ei/nrep03/seed01: ok
+[1873/2100] ackley_10d/separate_gp/haei_g0.5/nrep03/seed01: ok
+[1874/2100] ackley_10d/separate_gp/anpei_b0.8/nrep03/seed01: ok
+[1875/2100] ackley_10d/separate_gp/lcb/nrep03/seed02: ok
+[1876/2100] ackley_10d/separate_gp/rahbo_a0.5/nrep03/seed01: ok
+[1877/2100] ackley_10d/separate_gp/ei/nrep03/seed02: ok
+[1878/2100] ackley_10d/separate_gp/pi/nrep03/seed02: ok
+[1879/2100] ackley_10d/separate_gp/haei_g0.5/nrep03/seed02: ok
+[1880/2100] ackley_10d/separate_gp/anpei_b0.8/nrep03/seed02: ok
+[1881/2100] ackley_10d/separate_gp/rahbo_a0.5/nrep03/seed02: ok
+[1882/2100] ackley_10d/separate_gp/lcb/nrep03/seed03: ok
+[1883/2100] ackley_10d/separate_gp/pi/nrep03/seed03: ok
+[1884/2100] ackley_10d/separate_gp/ei/nrep03/seed03: ok
+[1885/2100] ackley_10d/separate_gp/haei_g0.5/nrep03/seed03: ok
+[1886/2100] ackley_10d/separate_gp/anpei_b0.8/nrep03/seed03: ok
+[1887/2100] ackley_10d/separate_gp/rahbo_a0.5/nrep03/seed03: ok
+[1888/2100] ackley_10d/separate_gp/pi/nrep03/seed04: ok
+[1889/2100] ackley_10d/separate_gp/lcb/nrep03/seed04: ok
+[1890/2100] ackley_10d/separate_gp/ei/nrep03/seed04: ok
+[1891/2100] ackley_10d/separate_gp/haei_g0.5/nrep03/seed04: ok
+[1892/2100] ackley_10d/separate_gp/anpei_b0.8/nrep03/seed04: ok
+[1893/2100] ackley_10d/separate_gp/lcb/nrep03/seed05: ok
+[1894/2100] ackley_10d/separate_gp/rahbo_a0.5/nrep03/seed04: ok
+[1895/2100] ackley_10d/separate_gp/pi/nrep03/seed05: ok
+[1896/2100] ackley_10d/separate_gp/ei/nrep03/seed05: ok
+[1897/2100] ackley_10d/separate_gp/haei_g0.5/nrep03/seed05: ok
+[1898/2100] ackley_10d/separate_gp/anpei_b0.8/nrep03/seed05: ok
+[1899/2100] griewank_10d/heter_LVGP/haei_g0.5/nrep10/seed02: ok
+[1900/2100] ackley_10d/separate_gp/rahbo_a0.5/nrep03/seed05: ok
+[1901/2100] griewank_10d/heter_LVGP/ei/nrep10/seed03: ok
+[1902/2100] ackley_10d/categorical_kernel/pi/nrep03/seed01: ok
+[1903/2100] ackley_10d/categorical_kernel/haei_g0.5/nrep03/seed01: ok
+[1904/2100] ackley_10d/categorical_kernel/ei/nrep03/seed01: ok
+[1905/2100] griewank_10d/heter_LVGP/pi/nrep10/seed03: ok
+[1906/2100] ackley_10d/categorical_kernel/lcb/nrep03/seed01: ok
+[1907/2100] griewank_10d/heter_LVGP/ei/nrep10/seed04: ok
+[1908/2100] ackley_10d/categorical_kernel/anpei_b0.8/nrep03/seed01: ok
+[1909/2100] griewank_10d/heter_LVGP/haei_g0.5/nrep10/seed03: ok
+[1910/2100] ackley_10d/categorical_kernel/ei/nrep03/seed02: ok
+[1911/2100] ackley_10d/categorical_kernel/pi/nrep03/seed02: ok
+[1912/2100] griewank_10d/heter_LVGP/anpei_b0.8/nrep10/seed02: ok
+[1913/2100] griewank_10d/heter_LVGP/rahbo_a0.5/nrep10/seed02: ok
+[1914/2100] griewank_10d/heter_LVGP/pi/nrep10/seed05: ok
+[1915/2100] ackley_10d/categorical_kernel/haei_g0.5/nrep03/seed02: ok
+[1916/2100] ackley_10d/categorical_kernel/rahbo_a0.5/nrep03/seed01: ok
+[1917/2100] griewank_10d/heter_LVGP/lcb/nrep10/seed03: ok
+[1918/2100] griewank_10d/heter_LVGP/ei/nrep10/seed05: ok
+[1919/2100] griewank_10d/heter_LVGP/lcb/nrep10/seed04: ok
+[1920/2100] griewank_10d/heter_LVGP/pi/nrep10/seed04: ok
+[1921/2100] ackley_10d/categorical_kernel/anpei_b0.8/nrep03/seed02: ok
+[1922/2100] griewank_10d/heter_LVGP/rahbo_a0.5/nrep10/seed03: ok
+[1923/2100] ackley_10d/categorical_kernel/lcb/nrep03/seed02: ok
+[1924/2100] ackley_10d/categorical_kernel/pi/nrep03/seed03: ok
+[1925/2100] griewank_10d/heter_LVGP/lcb/nrep10/seed05: ok
+[1926/2100] ackley_10d/categorical_kernel/ei/nrep03/seed03: ok
+[1927/2100] ackley_10d/categorical_kernel/haei_g0.5/nrep03/seed03: ok
+[1928/2100] griewank_10d/heter_LVGP/anpei_b0.8/nrep10/seed04: ok
+[1929/2100] griewank_10d/heter_LVGP/haei_g0.5/nrep10/seed04: ok
+[1930/2100] ackley_10d/categorical_kernel/anpei_b0.8/nrep03/seed03: ok
+[1931/2100] ackley_10d/categorical_kernel/pi/nrep03/seed04: ok
+[1932/2100] ackley_10d/categorical_kernel/rahbo_a0.5/nrep03/seed02: ok
+[1933/2100] ackley_10d/categorical_kernel/ei/nrep03/seed04: ok
+[1934/2100] griewank_10d/heter_LVGP/anpei_b0.8/nrep10/seed05: ok
+[1935/2100] ackley_10d/categorical_kernel/lcb/nrep03/seed03: ok
+[1936/2100] griewank_10d/heter_LVGP/rahbo_a0.5/nrep10/seed04: ok
+[1937/2100] ackley_10d/categorical_kernel/haei_g0.5/nrep03/seed04: ok
+[1938/2100] griewank_10d/heter_LVGP/anpei_b0.8/nrep10/seed03: ok
+[1939/2100] ackley_10d/categorical_kernel/ei/nrep03/seed05: ok
+[1940/2100] ackley_10d/categorical_kernel/pi/nrep03/seed05: ok
+[1941/2100] ackley_10d/categorical_kernel/anpei_b0.8/nrep03/seed04: ok
+[1942/2100] ackley_10d/categorical_kernel/anpei_b0.8/nrep03/seed05: ok
+[1943/2100] ackley_10d/categorical_kernel/haei_g0.5/nrep03/seed05: ok
+[1944/2100] ackley_10d/categorical_kernel/rahbo_a0.5/nrep03/seed03: ok
+[1945/2100] ackley_10d/categorical_kernel/lcb/nrep03/seed04: ok
+[1946/2100] griewank_10d/heter_LVGP/rahbo_a0.5/nrep10/seed05: ok
+[1947/2100] ackley_10d/categorical_kernel/rahbo_a0.5/nrep03/seed04: ok
+[1948/2100] ackley_10d/categorical_kernel/lcb/nrep03/seed05: ok
+[1949/2100] griewank_10d/heter_LVGP/haei_g0.5/nrep10/seed05: ok
+[1950/2100] ackley_10d/categorical_kernel/rahbo_a0.5/nrep03/seed05: ok
+[1951/2100] ackley_10d/standard_LVGP/ei/nrep03/seed05: ok
+[1952/2100] ackley_10d/standard_LVGP/ei/nrep03/seed02: ok
+[1953/2100] ackley_10d/standard_LVGP/lcb/nrep03/seed02: ok
+[1954/2100] ackley_10d/standard_LVGP/ei/nrep03/seed03: ok
+[1955/2100] ackley_10d/standard_LVGP/ei/nrep03/seed01: ok
+[1956/2100] ackley_10d/standard_LVGP/lcb/nrep03/seed01: ok
+[1957/2100] ackley_10d/standard_LVGP/pi/nrep03/seed01: ok
+[1958/2100] ackley_10d/standard_LVGP/lcb/nrep03/seed05: ok
+[1959/2100] ackley_10d/heter_LVGP/lcb/nrep03/seed01: ok
+[1960/2100] ackley_10d/standard_LVGP/pi/nrep03/seed04: ok
+[1961/2100] ackley_10d/standard_LVGP/lcb/nrep03/seed04: ok
+[1962/2100] ackley_10d/heter_LVGP/haei_g0.5/nrep03/seed01: ok
+[1963/2100] ackley_10d/standard_LVGP/pi/nrep03/seed02: ok
+[1964/2100] ackley_10d/standard_LVGP/ei/nrep03/seed04: ok
+[1965/2100] ackley_10d/standard_LVGP/pi/nrep03/seed05: ok
+[1966/2100] ackley_10d/heter_LVGP/lcb/nrep03/seed02: ok
+[1967/2100] ackley_10d/standard_LVGP/lcb/nrep03/seed03: ok
+[1968/2100] ackley_10d/heter_LVGP/rahbo_a0.5/nrep03/seed01: ok
+[1969/2100] ackley_10d/standard_LVGP/pi/nrep03/seed03: ok
+[1970/2100] ackley_10d/heter_LVGP/ei/nrep03/seed01: ok
+[1971/2100] ackley_10d/heter_LVGP/anpei_b0.8/nrep03/seed01: ok
+[1972/2100] ackley_10d/heter_LVGP/pi/nrep03/seed01: ok
+[1973/2100] griewank_10d/separate_gp/lcb/nrep03/seed01: ok
+[1974/2100] ackley_10d/heter_LVGP/pi/nrep03/seed02: ok
+[1975/2100] griewank_10d/separate_gp/pi/nrep03/seed01: ok
+[1976/2100] griewank_10d/separate_gp/ei/nrep03/seed01: ok
+[1977/2100] griewank_10d/separate_gp/haei_g0.5/nrep03/seed01: ok
+[1978/2100] griewank_10d/separate_gp/anpei_b0.8/nrep03/seed01: ok
+[1979/2100] ackley_10d/heter_LVGP/ei/nrep03/seed02: ok
+[1980/2100] griewank_10d/separate_gp/rahbo_a0.5/nrep03/seed01: ok
+[1981/2100] griewank_10d/separate_gp/lcb/nrep03/seed02: ok
+[1982/2100] griewank_10d/separate_gp/pi/nrep03/seed02: ok
+[1983/2100] griewank_10d/separate_gp/haei_g0.5/nrep03/seed02: ok
+[1984/2100] griewank_10d/separate_gp/ei/nrep03/seed02: ok
+[1985/2100] griewank_10d/separate_gp/anpei_b0.8/nrep03/seed02: ok
+[1986/2100] griewank_10d/separate_gp/lcb/nrep03/seed03: ok
+[1987/2100] griewank_10d/separate_gp/rahbo_a0.5/nrep03/seed02: ok
+[1988/2100] griewank_10d/separate_gp/pi/nrep03/seed03: ok
+[1989/2100] griewank_10d/separate_gp/ei/nrep03/seed03: ok
+[1990/2100] griewank_10d/separate_gp/haei_g0.5/nrep03/seed03: ok
+[1991/2100] griewank_10d/separate_gp/anpei_b0.8/nrep03/seed03: ok
+[1992/2100] griewank_10d/separate_gp/rahbo_a0.5/nrep03/seed03: ok
+[1993/2100] griewank_10d/separate_gp/lcb/nrep03/seed04: ok
+[1994/2100] griewank_10d/separate_gp/pi/nrep03/seed04: ok
+[1995/2100] griewank_10d/separate_gp/haei_g0.5/nrep03/seed04: ok
+[1996/2100] griewank_10d/separate_gp/ei/nrep03/seed04: ok
+[1997/2100] griewank_10d/separate_gp/anpei_b0.8/nrep03/seed04: ok
+[1998/2100] griewank_10d/separate_gp/lcb/nrep03/seed05: ok
+[1999/2100] griewank_10d/separate_gp/rahbo_a0.5/nrep03/seed04: ok
+[2000/2100] griewank_10d/separate_gp/pi/nrep03/seed05: ok
+[2001/2100] ackley_10d/heter_LVGP/rahbo_a0.5/nrep03/seed02: ok
+[2002/2100] griewank_10d/separate_gp/haei_g0.5/nrep03/seed05: ok
+[2003/2100] griewank_10d/separate_gp/ei/nrep03/seed05: ok
+[2004/2100] griewank_10d/separate_gp/anpei_b0.8/nrep03/seed05: ok
+[2005/2100] griewank_10d/separate_gp/rahbo_a0.5/nrep03/seed05: ok
+[2006/2100] ackley_10d/heter_LVGP/lcb/nrep03/seed03: ok
+[2007/2100] griewank_10d/categorical_kernel/pi/nrep03/seed01: ok
+[2008/2100] ackley_10d/heter_LVGP/haei_g0.5/nrep03/seed02: ok
+[2009/2100] griewank_10d/categorical_kernel/haei_g0.5/nrep03/seed01: ok
+[2010/2100] griewank_10d/categorical_kernel/ei/nrep03/seed01: ok
+[2011/2100] ackley_10d/heter_LVGP/rahbo_a0.5/nrep03/seed03: ok
+[2012/2100] ackley_10d/heter_LVGP/lcb/nrep03/seed05: ok
+[2013/2100] griewank_10d/categorical_kernel/anpei_b0.8/nrep03/seed01: ok
+[2014/2100] ackley_10d/heter_LVGP/rahbo_a0.5/nrep03/seed04: ok
+[2015/2100] ackley_10d/heter_LVGP/haei_g0.5/nrep03/seed03: ok
+[2016/2100] griewank_10d/categorical_kernel/pi/nrep03/seed02: ok
+[2017/2100] ackley_10d/heter_LVGP/ei/nrep03/seed03: ok
+[2018/2100] griewank_10d/categorical_kernel/haei_g0.5/nrep03/seed02: ok
+[2019/2100] griewank_10d/categorical_kernel/ei/nrep03/seed02: ok
+[2020/2100] ackley_10d/heter_LVGP/haei_g0.5/nrep03/seed04: ok
+[2021/2100] ackley_10d/heter_LVGP/ei/nrep03/seed04: ok
+[2022/2100] ackley_10d/heter_LVGP/anpei_b0.8/nrep03/seed03: ok
+[2023/2100] ackley_10d/heter_LVGP/anpei_b0.8/nrep03/seed02: ok
+[2024/2100] griewank_10d/categorical_kernel/ei/nrep03/seed03: ok
+[2025/2100] ackley_10d/heter_LVGP/rahbo_a0.5/nrep03/seed05: ok
+[2026/2100] ackley_10d/heter_LVGP/ei/nrep03/seed05: ok
+[2027/2100] ackley_10d/heter_LVGP/lcb/nrep03/seed04: ok
+[2028/2100] ackley_10d/heter_LVGP/pi/nrep03/seed05: ok
+[2029/2100] griewank_10d/categorical_kernel/lcb/nrep03/seed01: ok
+[2030/2100] ackley_10d/heter_LVGP/pi/nrep03/seed03: ok
+[2031/2100] ackley_10d/heter_LVGP/pi/nrep03/seed04: ok
+[2032/2100] griewank_10d/categorical_kernel/haei_g0.5/nrep03/seed03: ok
+[2033/2100] ackley_10d/heter_LVGP/haei_g0.5/nrep03/seed05: ok
+[2034/2100] griewank_10d/categorical_kernel/lcb/nrep03/seed02: ok
+[2035/2100] griewank_10d/categorical_kernel/pi/nrep03/seed03: ok
+[2036/2100] griewank_10d/categorical_kernel/anpei_b0.8/nrep03/seed02: ok
+[2037/2100] griewank_10d/categorical_kernel/rahbo_a0.5/nrep03/seed01: ok
+[2038/2100] griewank_10d/categorical_kernel/anpei_b0.8/nrep03/seed03: ok
+[2039/2100] ackley_10d/heter_LVGP/anpei_b0.8/nrep03/seed04: ok
+[2040/2100] griewank_10d/categorical_kernel/ei/nrep03/seed05: ok
+[2041/2100] griewank_10d/categorical_kernel/pi/nrep03/seed04: ok
+[2042/2100] griewank_10d/categorical_kernel/pi/nrep03/seed05: ok
+[2043/2100] griewank_10d/categorical_kernel/haei_g0.5/nrep03/seed04: ok
+[2044/2100] griewank_10d/categorical_kernel/rahbo_a0.5/nrep03/seed02: ok
+[2045/2100] griewank_10d/categorical_kernel/ei/nrep03/seed04: ok
+[2046/2100] griewank_10d/categorical_kernel/haei_g0.5/nrep03/seed05: ok
+[2047/2100] griewank_10d/categorical_kernel/rahbo_a0.5/nrep03/seed03: ok
+[2048/2100] griewank_10d/categorical_kernel/lcb/nrep03/seed03: ok
+[2049/2100] ackley_10d/heter_LVGP/anpei_b0.8/nrep03/seed05: ok
+[2050/2100] griewank_10d/categorical_kernel/anpei_b0.8/nrep03/seed04: ok
+[2051/2100] griewank_10d/categorical_kernel/anpei_b0.8/nrep03/seed05: ok
+[2052/2100] griewank_10d/categorical_kernel/rahbo_a0.5/nrep03/seed04: ok
+[2053/2100] griewank_10d/categorical_kernel/lcb/nrep03/seed04: ok
+[2054/2100] griewank_10d/categorical_kernel/lcb/nrep03/seed05: ok
+[2055/2100] griewank_10d/categorical_kernel/rahbo_a0.5/nrep03/seed05: ok
+[2056/2100] griewank_10d/standard_LVGP/ei/nrep03/seed01: ok
+[2057/2100] griewank_10d/standard_LVGP/ei/nrep03/seed02: ok
+[2058/2100] griewank_10d/heter_LVGP/ei/nrep03/seed01: ok
+[2059/2100] griewank_10d/standard_LVGP/ei/nrep03/seed03: ok
+[2060/2100] griewank_10d/standard_LVGP/pi/nrep03/seed02: ok
+[2061/2100] griewank_10d/standard_LVGP/pi/nrep03/seed03: ok
+[2062/2100] griewank_10d/standard_LVGP/lcb/nrep03/seed01: ok
+[2063/2100] griewank_10d/standard_LVGP/pi/nrep03/seed01: ok
+[2064/2100] griewank_10d/heter_LVGP/lcb/nrep03/seed01: ok
+[2065/2100] griewank_10d/standard_LVGP/lcb/nrep03/seed03: ok
+[2066/2100] griewank_10d/standard_LVGP/lcb/nrep03/seed02: ok
+[2067/2100] griewank_10d/standard_LVGP/ei/nrep03/seed04: ok
+[2068/2100] griewank_10d/heter_LVGP/pi/nrep03/seed01: ok
+[2069/2100] griewank_10d/standard_LVGP/ei/nrep03/seed05: ok
+[2070/2100] griewank_10d/standard_LVGP/lcb/nrep03/seed04: ok
+[2071/2100] griewank_10d/standard_LVGP/lcb/nrep03/seed05: ok
+[2072/2100] griewank_10d/standard_LVGP/pi/nrep03/seed04: ok
+[2073/2100] griewank_10d/standard_LVGP/pi/nrep03/seed05: ok
+[2074/2100] griewank_10d/heter_LVGP/lcb/nrep03/seed02: ok
+[2075/2100] griewank_10d/heter_LVGP/ei/nrep03/seed02: ok
+[2076/2100] griewank_10d/heter_LVGP/haei_g0.5/nrep03/seed01: ok
+[2077/2100] griewank_10d/heter_LVGP/pi/nrep03/seed02: ok
+[2078/2100] griewank_10d/heter_LVGP/anpei_b0.8/nrep03/seed01: ok

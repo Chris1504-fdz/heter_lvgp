@@ -1992,7 +1992,7 @@ def _pareto_mask(f, s2):
 
 
 def pareto_plot(grid, function, models=None, acqs=("haei", "anpei", "rahbo"), n_rep=10,
-                n=3000, f_zoom_pct=70, ax=None):
+                n=3000, f_zoom_pct=70, ax=None, show_models=True, level_lines=None):
     """HYPERPARAMETER-FREE robustness picture: the ground-truth (f, sigma^2) cloud of ALL designs
     (grey, per level tint), its PARETO FRONT (black steps -- designs where nothing is both better AND
     quieter), and each model's FINAL recommendations overlaid (marker = model). A recommendation ON
@@ -2007,16 +2007,24 @@ def pareto_plot(grid, function, models=None, acqs=("haei", "anpei", "rahbo"), n_
     front = _pareto_mask(f, s2)
     if ax is None:
         _, ax = plt.subplots(figsize=(7.5, 6))
+    if level_lines is None:                       # 1-D: each level is a clean parametric curve in
+        level_lines = (spec.d == 1)               # (f, sigma^2) space as x sweeps the domain
     for lv in spec.levels:
         m = lv_arr == lv
-        ax.scatter(f[m], s2[m], s=6, color=plt.cm.tab10((lv - 1) % 10), alpha=0.15, lw=0, zorder=1)
+        col = plt.cm.tab10((lv - 1) % 10)
+        if level_lines:
+            o = np.argsort(np.atleast_2d(X[m])[:, 0])
+            ax.plot(f[m][o], s2[m][o], color=col, lw=1.6, alpha=0.85, zorder=1,
+                    label=f"level {lv}")
+        else:
+            ax.scatter(f[m], s2[m], s=6, color=col, alpha=0.15, lw=0, zorder=1)
     fp = np.argsort(f[front])
     ax.step(f[front][fp], s2[front][fp], where="post", color="k", lw=2, zorder=3,
             label="Pareto front (ground truth)")
     # nominal optimum marker
     ax.scatter([f.min()], [s2[f.argmin()]], marker="*", s=240, c="gold", edgecolor="k",
                zorder=6, label="nominal optimum (min f)")
-    models = models or _ordered_models(grid)
+    models = (models or _ordered_models(grid)) if show_models else []
     for m in models:
         pts = []
         for run in grid.select(function=function, model=m, n_rep=n_rep):
@@ -2037,10 +2045,15 @@ def pareto_plot(grid, function, models=None, acqs=("haei", "anpei", "rahbo"), n_
     ax.set_ylim(-0.03 * np.percentile(s2[in_win], 99), np.percentile(s2[in_win], 99))
     ax.set_xlabel("true f at recommendation (lower = better)")
     ax.set_ylabel("true σ² at recommendation (lower = quieter)")
-    acq_lab = "all acqs" if acqs is None else "/".join(acqs)
-    ax.set_title(f"{function}: ground-truth Pareto front + final recommendations ({acq_lab})\n"
-                 "on-front = optimal for SOME risk weight; up-right of front = dominated",
-                 fontsize=10)
+    if show_models:
+        acq_lab = "all acqs" if acqs is None else "/".join(acqs)
+        ax.set_title(f"{function}: ground-truth Pareto front + final recommendations ({acq_lab})\n"
+                     "on-front = optimal for SOME risk weight; up-right of front = dominated",
+                     fontsize=10)
+    else:
+        ax.set_title(f"{function}: ground-truth (f, σ²) trade-off by categorical level\n"
+                     "black steps = Pareto front; each coloured curve = one level as x sweeps the domain",
+                     fontsize=10)
     ax.grid(alpha=0.3); ax.legend(fontsize=7, loc="upper right")
     return ax
 
